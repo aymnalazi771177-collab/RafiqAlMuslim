@@ -1,20 +1,20 @@
 name: rafiq_al_muslim
 description: تطبيق رفيق المسلم
 publish_to: 'none'
-version: 1.0.0+1
-
+version: 1.0.0+2
 environment:
-  sdk: '>=3.4.0 <4.0.0'
-
+  sdk: '>=3.5.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-
+  quran: ^1.4.1
+  adhan_dart: ^2.0.1
+  geolocator: ^14.1.2
+  shared_preferences: ^2.5.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-
 flutter:
   uses-material-design: true
