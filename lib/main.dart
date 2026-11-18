@@ -25,10 +25,12 @@ class RafiqApp extends StatelessWidget {
           primary: green,
           secondary: gold,
         ),
-        fontFamily: 'Arial',
         useMaterial3: true,
       ),
-      home: const MainScreen(),
+      home: const Directionality(
+        textDirection: TextDirection.rtl,
+        child: MainScreen(),
+      ),
     );
   }
 }
@@ -43,121 +45,127 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int page = 0;
 
-  final List<Widget> pages = const [
-    HomePage(),
-    QuranPage(),
-    TasbeehPage(),
-    AzkarPage(),
-    StoriesPage(),
-    PrayerPage(),
-    SettingsPage(),
-  ];
-
   void openPage(int index) {
     setState(() => page = index);
   }
 
-  int get navigationIndex {
+  int get navIndex {
     if (page == 1) return 1;
-    if (page == 2 || page == 3) return 2;
+    if (page == 2 || page == 3 || page == 4 || page == 5) {
+      return 2;
+    }
     if (page == 6) return 3;
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        body: IndexedStack(
-          index: page,
-          children: pages,
-        ),
-        bottomNavigationBar: NavigationBar(
-          backgroundColor: Colors.white,
-          indicatorColor: gold.withOpacity(0.25),
-          selectedIndex: navigationIndex,
-          onDestinationSelected: (index) {
-            if (index == 0) openPage(0);
-            if (index == 1) openPage(1);
-            if (index == 2) openPage(3);
-            if (index == 3) openPage(6);
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'الرئيسية',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book),
-              label: 'القرآن',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.favorite_outline),
-              selectedIcon: Icon(Icons.favorite),
-              label: 'الأذكار',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: 'الإعدادات',
-            ),
-          ],
-        ),
+    final pages = [
+      HomePage(onOpen: openPage),
+      const QuranPage(),
+      const TasbeehPage(),
+      const AzkarPage(),
+      const StoriesPage(),
+      const PrayerPage(),
+      const SettingsPage(),
+    ];
+
+    return Scaffold(
+      body: IndexedStack(
+        index: page,
+        children: pages,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: navIndex,
+        backgroundColor: Colors.white,
+        indicatorColor: gold.withOpacity(0.22),
+        onDestinationSelected: (index) {
+          if (index == 0) openPage(0);
+          if (index == 1) openPage(1);
+          if (index == 2) openPage(3);
+          if (index == 3) openPage(6);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'الرئيسية',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'القرآن',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_outline),
+            selectedIcon: Icon(Icons.favorite),
+            label: 'الأذكار',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
+            label: 'الإعدادات',
+          ),
+        ],
       ),
     );
   }
 }
 
+// الصفحة الرئيسية
+
+class HomeItem {
+  final String title;
+  final IconData icon;
+  final int page;
+
+  const HomeItem(this.title, this.icon, this.page);
+}
+
 class HomePage extends StatelessWidget {
   final Function(int) onOpen;
 
-  const HomePage({super.key, this.onOpen = _empty});
+  const HomePage({super.key, required this.onOpen});
 
-  static void _empty(int index) {}
+  static const items = [
+    HomeItem('القرآن الكريم', Icons.menu_book, 1),
+    HomeItem('الأذكار اليومية', Icons.volunteer_activism, 3),
+    HomeItem('المسبحة الإلكترونية', Icons.radio_button_checked, 2),
+    HomeItem('قصص الأنبياء', Icons.auto_stories, 4),
+    HomeItem('مواقيت الصلاة', Icons.access_time, 5),
+    HomeItem('الإعدادات', Icons.settings, 6),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final items = [
-      ['القرآن الكريم', Icons.menu_book, 1],
-      ['الأذكار اليومية', Icons.volunteer_activism, 3],
-      ['المسبحة الإلكترونية', Icons.radio_button_checked, 2],
-      ['قصص الأنبياء', Icons.auto_stories, 4],
-      ['مواقيت الصلاة', Icons.access_time, 5],
-      ['الإعدادات', Icons.settings, 6],
-    ];
-
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(18),
         children: [
           Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(25),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [green, darkGreen],
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
               ),
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(27),
+              border: Border.all(color: gold, width: 1.2),
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.mosque,
-                  color: gold,
-                  size: 55,
-                ),
+                const Icon(Icons.mosque, color: gold, size: 55),
                 const SizedBox(height: 12),
                 const Text(
                   'رفيق المسلم',
                   style: TextStyle(
                     color: gold,
-                    fontSize: 28,
+                    fontSize: 29,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 7),
                 const Text(
                   'رفيقك إلى الطمأنينة',
                   style: TextStyle(
@@ -165,19 +173,19 @@ class HomePage extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 22),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(17),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(17),
                   ),
                   child: const Text(
                     'ألا بذكر الله تطمئن القلوب',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 21,
                       height: 1.8,
                     ),
                   ),
@@ -185,16 +193,16 @@ class HomePage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 25),
           const Text(
             'أقسام التطبيق',
             style: TextStyle(
               color: green,
-              fontSize: 21,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 15),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -202,34 +210,38 @@ class HomePage extends StatelessWidget {
             gridDelegate:
                 const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.15,
+              crossAxisSpacing: 13,
+              mainAxisSpacing: 13,
+              childAspectRatio: 1.12,
             ),
             itemBuilder: (context, index) {
               final item = items[index];
+
               return InkWell(
                 borderRadius: BorderRadius.circular(20),
-                onTap: () => onOpen(item[2] as int),
+                onTap: () => onOpen(item.page),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: gold.withOpacity(0.45),
+                      color: gold.withOpacity(0.65),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: green.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        item[1] as IconData,
-                        color: green,
-                        size: 36,
-                      ),
-                      const SizedBox(height: 12),
+                      Icon(item.icon, color: green, size: 39),
+                      const SizedBox(height: 13),
                       Text(
-                        item[0] as String,
+                        item.title,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: green,
@@ -249,59 +261,156 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class QuranPage extends StatelessWidget {
-  const QuranPage({super.key});
+// رأس موحد للصفحات
+
+class PageHeader extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const PageHeader({
+    super.key,
+    required this.title,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SimplePage(
-      title: 'القرآن الكريم',
-      icon: Icons.menu_book,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 23),
+      decoration: const BoxDecoration(
+        color: green,
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(27),
+        ),
+      ),
       child: Column(
         children: [
-          const Text(
-            'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: green,
-              fontSize: 23,
-              height: 2,
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Text(
-            'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝ '
-            'الرَّحْمَٰنِ الرَّحِيمِ ۝ '
-            'مَالِكِ يَوْمِ الدِّينِ ۝ '
-            'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: green,
-              fontSize: 21,
-              height: 2.1,
-            ),
-          ),
-          const SizedBox(height: 25),
-          const Text(
-            'سورة الفاتحة',
-            style: TextStyle(
+          Icon(icon, color: gold, size: 39),
+          const SizedBox(height: 9),
+          Text(
+            title,
+            style: const TextStyle(
               color: gold,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
             ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'هذه صفحة أولية للقرآن الكريم. '
-            'سيتم استكمال المصحف كاملاً في مرحلة لاحقة.',
-            textAlign: TextAlign.center,
-            style: TextStyle(height: 1.8),
           ),
         ],
       ),
     );
   }
 }
+
+// القرآن الكريم
+
+class QuranPage extends StatelessWidget {
+  const QuranPage({super.key});
+
+  static const surahs = [
+    'الفاتحة', 'البقرة', 'آل عمران', 'النساء', 'المائدة',
+    'الأنعام', 'الأعراف', 'الأنفال', 'التوبة', 'يونس',
+    'هود', 'يوسف', 'الرعد', 'إبراهيم', 'الحجر',
+    'النحل', 'الإسراء', 'الكهف', 'مريم', 'طه',
+    'الأنبياء', 'الحج', 'المؤمنون', 'النور', 'الفرقان',
+    'الشعراء', 'النمل', 'القصص', 'العنكبوت', 'الروم',
+    'لقمان', 'السجدة', 'الأحزاب', 'سبأ', 'فاطر',
+    'يس', 'الصافات', 'ص', 'الزمر', 'غافر',
+    'فصلت', 'الشورى', 'الزخرف', 'الدخان', 'الجاثية',
+    'الأحقاف', 'محمد', 'الفتح', 'الحجرات', 'ق',
+    'الذاريات', 'الطور', 'النجم', 'القمر', 'الرحمن',
+    'الواقعة', 'الحديد', 'المجادلة', 'الحشر', 'الممتحنة',
+    'الصف', 'الجمعة', 'المنافقون', 'التغابن', 'الطلاق',
+    'التحريم', 'الملك', 'القلم', 'الحاقة', 'المعارج',
+    'نوح', 'الجن', 'المزمل', 'المدثر', 'القيامة',
+    'الإنسان', 'المرسلات', 'النبأ', 'النازعات', 'عبس',
+    'التكوير', 'الانفطار', 'المطففين', 'الانشقاق', 'البروج',
+    'الطارق', 'الأعلى', 'الغاشية', 'الفجر', 'البلد',
+    'الشمس', 'الليل', 'الضحى', 'الشرح', 'التين',
+    'العلق', 'القدر', 'البينة', 'الزلزلة', 'العاديات',
+    'القارعة', 'التكاثر', 'العصر', 'الهمزة', 'الفيل',
+    'قريش', 'الماعون', 'الكوثر', 'الكافرون', 'النصر',
+    'المسد', 'الإخلاص', 'الفلق', 'الناس',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          const PageHeader(
+            title: 'القرآن الكريم',
+            icon: Icons.menu_book,
+          ),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'اختر السورة من فهرس القرآن الكريم',
+              style: TextStyle(
+                color: green,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              itemCount: surahs.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: green,
+                      child: Text(
+                        '${index + 1}',
+                        style: const TextStyle(color: gold),
+                      ),
+                    ),
+                    title: Text(
+                      'سورة ${surahs[index]}',
+                      style: const TextStyle(
+                        color: green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: gold,
+                      size: 17,
+                    ),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('سورة ${surahs[index]}'),
+                          content: const Text(
+                            'تم تجهيز فهرس السور. '
+                            'سيتم ربط نص المصحف المعتمد '
+                            'في المرحلة التالية.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('حسناً'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// المسبحة الإلكترونية
 
 class TasbeehPage extends StatefulWidget {
   const TasbeehPage({super.key});
@@ -312,36 +421,62 @@ class TasbeehPage extends StatefulWidget {
 
 class _TasbeehPageState extends State<TasbeehPage> {
   int count = 0;
+  String zekr = 'سبحان الله وبحمده';
+
+  final List<String> choices = [
+    'سبحان الله',
+    'الحمد لله',
+    'الله أكبر',
+    'لا إله إلا الله',
+    'سبحان الله وبحمده',
+    'أستغفر الله',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return SimplePage(
-      title: 'المسبحة الإلكترونية',
-      icon: Icons.radio_button_checked,
+    return SafeArea(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'سبحان الله وبحمده',
-            style: TextStyle(
-              color: green,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
+          const PageHeader(
+            title: 'المسبحة الإلكترونية',
+            icon: Icons.radio_button_checked,
           ),
-          const SizedBox(height: 30),
+          const Spacer(),
+          const Text(
+            'الذكر الحالي',
+            style: TextStyle(color: Colors.black54, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: zekr,
+            items: choices.map((value) {
+              return DropdownMenuItem(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  zekr = value;
+                  count = 0;
+                });
+              }
+            },
+          ),
+          const SizedBox(height: 25),
           Container(
-            width: 190,
-            height: 190,
+            width: 205,
+            height: 205,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: green,
-              border: Border.all(color: gold, width: 5),
+              border: Border.all(color: gold, width: 6),
               boxShadow: [
                 BoxShadow(
-                  color: green.withOpacity(0.2),
-                  blurRadius: 18,
-                  spreadRadius: 3,
+                  color: green.withOpacity(0.16),
+                  blurRadius: 20,
+                  spreadRadius: 4,
                 ),
               ],
             ),
@@ -350,39 +485,40 @@ class _TasbeehPageState extends State<TasbeehPage> {
                 '$count',
                 style: const TextStyle(
                   color: gold,
-                  fontSize: 55,
+                  fontSize: 65,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 28),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: green,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
-                horizontal: 45,
+                horizontal: 55,
                 vertical: 17,
               ),
             ),
-            onPressed: () {
-              setState(() => count++);
-            },
+            onPressed: () => setState(() => count++),
             child: const Text('تسبيح'),
           ),
           TextButton(
             onPressed: () => setState(() => count = 0),
             child: const Text(
-              'تصفير العداد',
+              'إعادة العداد',
               style: TextStyle(color: green),
             ),
           ),
+          const Spacer(),
         ],
       ),
     );
   }
 }
+
+// الأذكار اليومية
 
 class AzkarPage extends StatefulWidget {
   const AzkarPage({super.key});
@@ -393,6 +529,7 @@ class AzkarPage extends StatefulWidget {
 
 class _AzkarPageState extends State<AzkarPage> {
   String selected = 'أذكار الصباح';
+  final Map<String, int> counters = {};
 
   final Map<String, List<Map<String, dynamic>>> azkar = {
     'أذكار الصباح': [
@@ -432,30 +569,16 @@ class _AzkarPageState extends State<AzkarPage> {
       },
     ],
     'بعد الصلاة': [
-      {
-        'text': 'أستغفر الله.',
-        'times': 3,
-      },
+      {'text': 'أستغفر الله.', 'times': 3},
       {
         'text': 'اللهم أنت السلام ومنك السلام، تباركت يا ذا الجلال والإكرام.',
         'times': 1,
       },
-      {
-        'text': 'سبحان الله.',
-        'times': 33,
-      },
-      {
-        'text': 'الحمد لله.',
-        'times': 33,
-      },
-      {
-        'text': 'الله أكبر.',
-        'times': 33,
-      },
+      {'text': 'سبحان الله.', 'times': 33},
+      {'text': 'الحمد لله.', 'times': 33},
+      {'text': 'الله أكبر.', 'times': 33},
     ],
   };
-
-  final Map<String, int> counters = {};
 
   @override
   Widget build(BuildContext context) {
@@ -464,40 +587,11 @@ class _AzkarPageState extends State<AzkarPage> {
     return SafeArea(
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: green,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(28),
-              ),
-            ),
-            child: const Column(
-              children: [
-                Icon(
-                  Icons.volunteer_activism,
-                  color: gold,
-                  size: 42,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'الأذكار اليومية',
-                  style: TextStyle(
-                    color: gold,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'اجعل لسانك رطباً بذكر الله',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
+          const PageHeader(
+            title: 'الأذكار اليومية',
+            icon: Icons.volunteer_activism,
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 14),
           Wrap(
             spacing: 7,
             children: azkar.keys.map((name) {
@@ -513,7 +607,7 @@ class _AzkarPageState extends State<AzkarPage> {
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(15),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
@@ -523,7 +617,7 @@ class _AzkarPageState extends State<AzkarPage> {
 
                 return Card(
                   color: Colors.white,
-                  margin: const EdgeInsets.only(bottom: 14),
+                  margin: const EdgeInsets.only(bottom: 13),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                     side: BorderSide(
@@ -548,19 +642,13 @@ class _AzkarPageState extends State<AzkarPage> {
                           count >= target
                               ? 'اكتمل الذكر'
                               : 'التكرار: $count من $target',
-                          style: const TextStyle(
-                            color: Colors.black54,
-                          ),
+                          style: const TextStyle(color: Colors.black54),
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: green,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 35,
-                              vertical: 13,
-                            ),
                           ),
                           onPressed: count >= target
                               ? null
@@ -593,199 +681,230 @@ class _AzkarPageState extends State<AzkarPage> {
   }
 }
 
+// قصص الأنبياء
+
 class StoriesPage extends StatelessWidget {
   const StoriesPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final stories = [
-      'قصة آدم عليه السلام',
-      'قصة نوح عليه السلام',
-      'قصة إبراهيم عليه السلام',
-      'قصة يوسف عليه السلام',
-      'قصة موسى عليه السلام',
-      'قصة عيسى عليه السلام',
-      'سيرة النبي محمد ﷺ',
-    ];
-
-    return SimplePage(
-      title: 'قصص الأنبياء',
-      icon: Icons.auto_stories,
-      child: Column(
-        children: stories.map((story) {
-          return Card(
-            child: ListTile(
-              leading: const Icon(
-                Icons.menu_book,
-                color: gold,
-              ),
-              title: Text(
-                story,
-                style: const TextStyle(
-                  color: green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: green,
-              ),
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('سيتم إضافة القصة في تحديث قادم'),
-                  ),
-                );
-              },
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class PrayerPage extends StatelessWidget {
-  const PrayerPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final prayers = [
-      ['الفجر', '--:--'],
-      ['الشروق', '--:--'],
-      ['الظهر', '--:--'],
-      ['العصر', '--:--'],
-      ['المغرب', '--:--'],
-      ['العشاء', '--:--'],
-    ];
-
-    return SimplePage(
-      title: 'مواقيت الصلاة',
-      icon: Icons.access_time,
-      child: Column(
-        children: [
-          const Text(
-            'مواقيت الصلاة',
-            style: TextStyle(
-              color: green,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'سيتم ربط المواقيت بموقعك وطريقة الحساب لاحقاً',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ...prayers.map((prayer) {
-            return Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.mosque,
-                  color: gold,
-                ),
-                title: Text(
-                  prayer[0],
-                  style: const TextStyle(
-                    color: green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                trailing: Text(
-                  prayer[1],
-                  style: const TextStyle(
-                    color: green,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SimplePage(
-      title: 'الإعدادات',
-      icon: Icons.settings,
-      child: Column(
-        children: [
-          const ListTile(
-            leading: Icon(Icons.info_outline, color: gold),
-            title: Text('عن تطبيق رفيق المسلم'),
-            subtitle: Text('رفيقك إلى الطمأنينة'),
-          ),
-          const Divider(),
-          const ListTile(
-            leading: Icon(Icons.palette_outlined, color: gold),
-            title: Text('المظهر'),
-            subtitle: Text('الأخضر والذهبي'),
-          ),
-          const Divider(),
-          const ListTile(
-            leading: Icon(Icons.favorite_outline, color: gold),
-            title: Text('نسأل الله أن ينفع بهذا التطبيق'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class SimplePage extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  const SimplePage({
-    super.key,
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
+  static const stories = [
+    'آدم عليه السلام',
+    'نوح عليه السلام',
+    'إبراهيم عليه السلام',
+    'يوسف عليه السلام',
+    'موسى عليه السلام',
+    'عيسى عليه السلام',
+    'محمد ﷺ',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(22),
-            decoration: const BoxDecoration(
-              color: green,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(25),
-              ),
-            ),
-            child: Column(
-              children: [
-                Icon(icon, color: gold, size: 38),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: gold,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          const PageHeader(
+            title: 'قصص الأنبياء',
+            icon: Icons.auto_stories,
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(15),
+              itemCount: stories.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.menu_book,
+                      color: gold,
+                    ),
+                    title: Text(
+                      'قصة ${stories[index]}',
+                      style: const TextStyle(
+                        color: green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: green,
+                      size: 16,
+                    ),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('قصة ${stories[index]}'),
+                          content: const Text(
+                            'سيتم إضافة القصة كاملة '
+                            'مع مراجعة محتواها في تحديث المحتوى.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('إغلاق'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// مواقيت الصلاة
+
+class PrayerPage extends StatelessWidget {
+  const PrayerPage({super.key});
+
+  static const prayers = [
+    'الفجر',
+    'الشروق',
+    'الظهر',
+    'العصر',
+    'المغرب',
+    'العشاء',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          const PageHeader(
+            title: 'مواقيت الصلاة',
+            icon: Icons.access_time,
+          ),
+          const SizedBox(height: 20),
+          const Icon(Icons.location_on, color: gold, size: 35),
+          const Text(
+            'مواقيت الصلاة حسب موقعك',
+            style: TextStyle(
+              color: green,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'سيتم تفعيل تحديد الموقع وحساب المواقيت '
+              'في مرحلة ربط خدمة الصلاة.',
+              textAlign: TextAlign.center,
+              style: TextStyle(height: 1.8),
             ),
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(18),
-              children: [child],
+              padding: const EdgeInsets.all(15),
+              children: prayers.map((name) {
+                return Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: const Icon(Icons.mosque, color: gold),
+                    title: Text(
+                      name,
+                      style: const TextStyle(
+                        color: green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Text(
+                      '--:--',
+                      style: TextStyle(
+                        color: green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// الإعدادات
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool notifications = true;
+  bool vibration = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        children: [
+          const PageHeader(
+            title: 'الإعدادات',
+            icon: Icons.settings,
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Card(
+                  color: Colors.white,
+                  child: SwitchListTile(
+                    secondary: const Icon(
+                      Icons.notifications_outlined,
+                      color: gold,
+                    ),
+                    title: const Text('التنبيهات'),
+                    value: notifications,
+                    activeColor: green,
+                    onChanged: (value) {
+                      setState(() => notifications = value);
+                    },
+                  ),
+                ),
+                Card(
+                  color: Colors.white,
+                  child: SwitchListTile(
+                    secondary: const Icon(
+                      Icons.vibration,
+                      color: gold,
+                    ),
+                    title: const Text('الاهتزاز'),
+                    value: vibration,
+                    activeColor: green,
+                    onChanged: (value) {
+                      setState(() => vibration = value);
+                    },
+                  ),
+                ),
+                const Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: Icon(Icons.info_outline, color: gold),
+                    title: Text('عن التطبيق'),
+                    subtitle: Text('رفيق المسلم - رفيقك إلى الطمأنينة'),
+                  ),
+                ),
+                const Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: Icon(Icons.favorite, color: gold),
+                    title: Text('نسأل الله أن ينفع بهذا العمل'),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
