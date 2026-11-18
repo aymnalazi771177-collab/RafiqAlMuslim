@@ -29,9 +29,9 @@ jobs:
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
           idx = s.find('>')
-          perms = '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\\n'
+          perms = '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n'
           if 'ACCESS_COARSE_LOCATION' not in s:
-              s = s[:idx+1] + '\\n' + perms + s[idx+1:]
+              s = s[:idx+1] + '\n' + perms + s[idx+1:]
           p.write_text(s)
           PY
       - name: Get dependencies
