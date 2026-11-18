@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:adhan_dart/adhan_dart.dart';
 import 'package:geolocator/geolocator.dart';
+import 'data/prophet_stories.dart';
 
 const green=Color(0xFF073F35), darkGreen=Color(0xFF052F28), gold=Color(0xFFD5B16A), cream=Color(0xFFF8F4E9);
 
@@ -79,7 +80,13 @@ class QuranPage extends StatefulWidget{const QuranPage({super.key});@override St
 class _QuranPageState extends State<QuranPage>{
   final search=TextEditingController();@override void dispose(){search.dispose();super.dispose();}
   @override Widget build(BuildContext c){
-    final nums=List.generate(114,(i)=>i+1).where((n)=>search.text.isEmpty||quran.getSurahNameArabic(n).contains(search.text)||n.toString()==search.text).toList();
+    final orderedSurahs = List<int>.generate(114, (i) => i + 1)
+      ..sort((a, b) => a.compareTo(b));
+    final nums = orderedSurahs
+        .where((n) => search.text.isEmpty ||
+            quran.getSurahNameArabic(n).contains(search.text) ||
+            n.toString() == search.text)
+        .toList();
     return SafeArea(child:Column(children:[const Header('القرآن الكريم',Icons.menu_book),Padding(padding:const EdgeInsets.all(13),child:TextField(controller:search,onChanged:(_)=>setState((){}),decoration:InputDecoration(prefixIcon:const Icon(Icons.search),hintText:'ابحث عن سورة أو رقمها',filled:true,fillColor:Theme.of(c).cardColor,border:OutlineInputBorder(borderRadius:BorderRadius.circular(14),borderSide:BorderSide.none)))),Expanded(child:ListView.builder(padding:const EdgeInsets.symmetric(horizontal:12),itemCount:nums.length,itemBuilder:(c,i){
       final n=nums[i];return Card(child:ListTile(leading:CircleAvatar(backgroundColor:green,child:Text('$n',style:const TextStyle(color:gold))),title:Text('سورة '+quran.getSurahNameArabic(n),style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:Text(quran.getVerseCount(n).toString()+' آية • '+(quran.getPlaceOfRevelation(n)=='Makkah'?'مكية':'مدنية')),trailing:const Icon(Icons.chevron_left,color:gold),onTap:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(surah:n))))));
     }))]));
@@ -94,7 +101,17 @@ class _QuranReaderState extends State<QuranReader>{
       Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:green,borderRadius:BorderRadius.circular(17),border:Border.all(color:gold)),child:Column(children:[Text(name,style:const TextStyle(color:gold,fontSize:25,fontWeight:FontWeight.bold)),Text(total.toString()+' آية',style:const TextStyle(color:Colors.white70))])),
       if(widget.surah!=1&&widget.surah!=9)Padding(padding:const EdgeInsets.symmetric(vertical:18),child:Text(quran.basmala,textAlign:TextAlign.center,style:TextStyle(fontSize:size,color:Theme.of(c).colorScheme.primary))),
       ...List.generate(total,(i){final a=i+1;return InkWell(onLongPress:()async{final p=await SharedPreferences.getInstance();await p.setInt('last_surah',widget.surah);await p.setInt('last_ayah',a);if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(SnackBar(content:Text('تم حفظ موضع القراءة: الآية '+a.toString())));},child:Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Text(quran.getVerse(widget.surah,a,verseEndSymbol:true),textAlign:TextAlign.justify,style:TextStyle(fontSize:size,height:2,color:Theme.of(c).colorScheme.onSurface))));}),
-      const Text('اضغط مطولًا على الآية لحفظ موضع القراءة.',textAlign:TextAlign.center,style:TextStyle(color:Colors.grey))
+      const Text('اضغط مطولًا على الآية لحفظ موضع القراءة.',textAlign:TextAlign.center,style:TextStyle(color:Colors.grey)),
+      const SizedBox(height: 18),
+      Row(children: [
+        Expanded(child: OutlinedButton.icon(
+          onPressed: widget.surah > 1 ? () => Navigator.pushReplacement(c, MaterialPageRoute(builder: (_) => Directionality(textDirection: TextDirection.rtl, child: QuranReader(surah: widget.surah - 1)))) : null,
+          icon: const Icon(Icons.chevron_right), label: const Text('السورة السابقة'))),
+        const SizedBox(width: 10),
+        Expanded(child: OutlinedButton.icon(
+          onPressed: widget.surah < 114 ? () => Navigator.pushReplacement(c, MaterialPageRoute(builder: (_) => Directionality(textDirection: TextDirection.rtl, child: QuranReader(surah: widget.surah + 1)))) : null,
+          icon: const Icon(Icons.chevron_left), label: const Text('السورة التالية'))),
+      ])
     ]));
   }
 }
@@ -141,21 +158,75 @@ class _AzkarPageState extends State<AzkarPage>{
   ]));}
 }
 
-class Story{final String title,body,lesson;const Story(this.title,this.body,this.lesson);}
-class StoriesPage extends StatelessWidget{
+class StoriesPage extends StatelessWidget {
   const StoriesPage({super.key});
-  static const stories=[
-    Story('آدم عليه السلام','خلق الله آدم من طين وعلّمه الأسماء وأسكنه الجنة مع زوجه. ثم وقعت الزلة فتاب آدم إلى ربه فتاب الله عليه وجعله خليفة في الأرض.','التوبة والرجوع إلى الله بعد الخطأ.'),
-    Story('نوح عليه السلام','دعا نوح قومه إلى عبادة الله زمنًا طويلًا، فكذّبه أكثرهم. فأمره الله بصنع السفينة، فنجّى الله نوحًا ومن آمن معه وأغرق المكذبين.','الصبر والثبات على الحق.'),
-    Story('إبراهيم عليه السلام','أنكر إبراهيم عبادة الأصنام ودعا قومه إلى التوحيد. وابتلاه الله فصبر، ورفع قواعد البيت مع ابنه إسماعيل.','التوحيد واليقين والتوكل على الله.'),
-    Story('يوسف عليه السلام','ابتُلي يوسف بمحنة إخوته والجبّ والسجن، فصبر وعفّ. ثم مكّن الله له في الأرض واجتمع بأهله وعفا عن إخوته.','العفة والصبر والعفو وحسن الظن بالله.'),
-    Story('موسى عليه السلام','أرسل الله موسى إلى فرعون وأيّده بالآيات. ولما خرج ببني إسرائيل شق الله لهم البحر ونجّاهم وأهلك فرعون وجنوده.','الثقة بنصر الله وعدم الخوف من الباطل.'),
-    Story('عيسى عليه السلام','خلق الله عيسى بكلمته من غير أب، وأيّده بالبينات، فدعا بني إسرائيل إلى عبادة الله وحده وأجرى على يديه المعجزات بإذن الله.','الإيمان بقدرة الله وعبادته وحده.'),
-    Story('محمد ﷺ','بعث الله محمدًا ﷺ خاتم الأنبياء، فدعا إلى التوحيد ومكارم الأخلاق. أوذي في مكة فصبر، ثم هاجر إلى المدينة وأقام مجتمعًا يقوم على الإيمان والعدل والرحمة.','الرحمة والصدق والصبر وحسن الخلق.')
-  ];
-  @override Widget build(BuildContext c)=>SafeArea(child:Column(children:[const Header('قصص الأنبياء',Icons.auto_stories),const Padding(padding:EdgeInsets.all(12),child:Text('خلاصات موجزة مستفادة من القصص القرآني.',style:TextStyle(color:Colors.grey))),Expanded(child:ListView.builder(padding:const EdgeInsets.all(12),itemCount:stories.length,itemBuilder:(c,i){final s=stories[i];return Card(child:ListTile(leading:const CircleAvatar(backgroundColor:green,child:Icon(Icons.menu_book,color:gold)),title:Text(s.title,style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:const Text('القصة والعبرة'),trailing:const Icon(Icons.chevron_left,color:gold),onTap:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:StoryDetail(story:s))))));}))]));
+  @override
+  Widget build(BuildContext c) => SafeArea(child: Column(children: [
+    const Header('قصص الأنبياء', Icons.auto_stories),
+    const Padding(
+      padding: EdgeInsets.all(12),
+      child: Text('قصص الأنبياء المذكورين في القرآن الكريم، مع مواضع الآيات للاستزادة.',
+          textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+    ),
+    Expanded(child: ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: prophetStories.length,
+      itemBuilder: (c, i) {
+        final story = prophetStories[i];
+        return Card(child: ListTile(
+          leading: CircleAvatar(backgroundColor: green,
+              child: Text('${i + 1}', style: const TextStyle(color: gold))),
+          title: Text(story.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: const Text('عرض القصة والتفاصيل والعبر'),
+          trailing: const Icon(Icons.chevron_left, color: gold),
+          onTap: () => Navigator.push(c, MaterialPageRoute(
+            builder: (_) => Directionality(textDirection: TextDirection.rtl,
+                child: StoryDetail(story: story))),
+          ),
+        ));
+      },
+    )),
+  ]));
 }
-class StoryDetail extends StatelessWidget{final Story story;const StoryDetail({super.key,required this.story});@override Widget build(BuildContext c)=>Scaffold(appBar:AppBar(title:Text(story.title)),body:ListView(padding:const EdgeInsets.all(20),children:[Container(padding:const EdgeInsets.all(18),decoration:BoxDecoration(color:green,borderRadius:BorderRadius.circular(18),border:Border.all(color:gold)),child:Text(story.title,textAlign:TextAlign.center,style:const TextStyle(color:gold,fontSize:23,fontWeight:FontWeight.bold))),const SizedBox(height:20),Text(story.body,style:const TextStyle(fontSize:19,height:2)),const SizedBox(height:20),Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('العبرة',style:TextStyle(color:gold,fontSize:19,fontWeight:FontWeight.bold)),const SizedBox(height:8),Text(story.lesson,style:const TextStyle(fontSize:18,height:1.8))]))),const SizedBox(height:12),const Text('هذه خلاصة مختصرة وليست سردًا تفصيليًا لكل ما ورد في كتب التفسير والسيرة.',style:TextStyle(color:Colors.grey))]));}
+
+class StoryDetail extends StatelessWidget {
+  final ProphetStory story;
+  const StoryDetail({super.key, required this.story});
+  @override
+  Widget build(BuildContext c) => Scaffold(
+    appBar: AppBar(title: Text(story.title)),
+    body: ListView(padding: const EdgeInsets.all(20), children: [
+      Container(padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(color: green, borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: gold)),
+        child: Text(story.title, textAlign: TextAlign.center,
+          style: const TextStyle(color: gold, fontSize: 23, fontWeight: FontWeight.bold))),
+      const SizedBox(height: 20),
+      Text(story.body.trim(), textAlign: TextAlign.justify,
+        style: const TextStyle(fontSize: 18, height: 2)),
+      const SizedBox(height: 20),
+      Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('العبرة والفائدة', style: TextStyle(color: gold, fontSize: 19, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(story.lesson, style: const TextStyle(fontSize: 17, height: 1.8)),
+        ],
+      ))),
+      const SizedBox(height: 14),
+      Card(child: Padding(padding: const EdgeInsets.all(16), child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('مواضع القصة في القرآن الكريم',
+            style: TextStyle(color: gold, fontSize: 17, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(story.references, style: const TextStyle(fontSize: 15, height: 1.8)),
+        ],
+      ))),
+      const SizedBox(height: 12),
+      const Text('اعتمدت هذه السيرة على ما ورد في القرآن الكريم. وقد تكون تفاصيل بعض الأنبياء موجزة لأن القرآن لم يسرد أحداث حياتهم كاملة؛ ولم تُضف روايات غير ثابتة.',
+        textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, height: 1.7)),
+    ]),
+  );
+}
 
 class PrayerPage extends StatefulWidget{const PrayerPage({super.key});@override State<PrayerPage> createState()=>_PrayerPageState();}
 class _PrayerPageState extends State<PrayerPage>{
