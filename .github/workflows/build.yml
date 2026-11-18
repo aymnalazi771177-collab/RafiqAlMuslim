@@ -16,30 +16,42 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+
       - name: Create Android platform
-        run: flutter create --platforms=android --project-name rafiq_al_muslim .
+        run: |
+          flutter create --platforms=android --project-name rafiq_al_muslim --org com.rafiqalmuslim /tmp/rafiq_android
+          cp -R /tmp/rafiq_android/android ./android
+
       - name: Add Android location permissions
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
-          idx = s.find('>')
-          perms = '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n'
+          marker = '<manifest'
+          start = s.find('>')
+          if start < 0:
+              raise SystemExit("AndroidManifest.xml has no manifest root")
+          perms = '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\\n'
           if 'ACCESS_COARSE_LOCATION' not in s:
-              s = s[:idx+1] + '\n' + perms + s[idx+1:]
+              s = s[:start+1] + '\\n' + perms + s[start+1:]
           p.write_text(s)
           PY
+
       - name: Get dependencies
         run: flutter pub get
+
       - name: Analyze
         run: flutter analyze
+
       - name: Build APK
         run: flutter build apk --release
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
