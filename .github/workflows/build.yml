@@ -1,4 +1,5 @@
 name: Build Rafiq Al Muslim APK
+# Trigger a fresh build after dependency compatibility fix
 
 'on':
   workflow_dispatch:
