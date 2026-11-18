@@ -81,7 +81,7 @@ class _QuranPageState extends State<QuranPage>{
   @override Widget build(BuildContext c){
     final nums=List.generate(114,(i)=>i+1).where((n)=>search.text.isEmpty||quran.getSurahNameArabic(n).contains(search.text)||n.toString()==search.text).toList();
     return SafeArea(child:Column(children:[const Header('القرآن الكريم',Icons.menu_book),Padding(padding:const EdgeInsets.all(13),child:TextField(controller:search,onChanged:(_)=>setState((){}),decoration:InputDecoration(prefixIcon:const Icon(Icons.search),hintText:'ابحث عن سورة أو رقمها',filled:true,fillColor:Theme.of(c).cardColor,border:OutlineInputBorder(borderRadius:BorderRadius.circular(14),borderSide:BorderSide.none)))),Expanded(child:ListView.builder(padding:const EdgeInsets.symmetric(horizontal:12),itemCount:nums.length,itemBuilder:(c,i){
-      final n=nums[i];return Card(child:ListTile(leading:CircleAvatar(backgroundColor:green,child:Text('$n',style:const TextStyle(color:gold))),title:Text('سورة '+quran.getSurahNameArabic(n),style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:Text(quran.getVerseCount(n).toString()+' آية • '+(quran.getPlaceOfRevelation(n)=='Makkah'?'مكية':'مدنية')),trailing:const Icon(Icons.chevron_left,color:gold),onTap:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(surah:n)))));
+      final n=nums[i];return Card(child:ListTile(leading:CircleAvatar(backgroundColor:green,child:Text('$n',style:const TextStyle(color:gold))),title:Text('سورة '+quran.getSurahNameArabic(n),style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:Text(quran.getVerseCount(n).toString()+' آية • '+(quran.getPlaceOfRevelation(n)=='Makkah'?'مكية':'مدنية')),trailing:const Icon(Icons.chevron_left,color:gold),onTap:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(surah:n))))));
     }))]));
   }
 }
@@ -126,7 +126,7 @@ class _AzkarPageState extends State<AzkarPage>{
     'أذكار النوم':[Dhikr('باسمك اللهم أموت وأحيا.',1),Dhikr('سبحان الله.',33),Dhikr('الحمد لله.',33),Dhikr('الله أكبر.',34)],
     'أذكار الاستيقاظ':[Dhikr('الحمد لله الذي أحيانا بعدما أماتنا وإليه النشور.',1)]
   };
-  String k(String cat,int i)=>'azkar_'+cat+'_'+i;
+  String k(String cat,int i)=>'azkar_'+cat+'_'+i.toString();
   @override void initState(){super.initState();load();}
   Future<void> load()async{final p=await SharedPreferences.getInstance();for(final cat in data.keys){for(var i=0;i<data[cat]!.length;i++){counts[k(cat,i)]=p.getInt(k(cat,i))??0;}}if(mounted)setState((){});}
   Future<void> increment(int i)async{final key=k(selected,i),n=(counts[key]??0)+1;setState(()=>counts[key]=n);final p=await SharedPreferences.getInstance();await p.setInt(key,n);await feedback();}
