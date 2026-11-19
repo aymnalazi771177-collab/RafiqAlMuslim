@@ -1,6 +1,8 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:flutter/services.dart';
 
 const Color green = Color(0xFF073F35);
 const Color darkGreen = Color(0xFF052F28);
@@ -294,80 +296,96 @@ class PageHeader extends StatelessWidget {
             style: const TextStyle(
               color: gold,
               fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              fontWeight: FontWeight.bold// القرآن الكريم
+
+class QuranPage extends StatefulWidget {
+  const QuranPage({super.key});
+
+  @override
+  State<QuranPage> createState() => _QuranPageState();
 }
 
-// القرآن الكريم
+class _QuranPageState extends State<QuranPage> {
+  late final Future<List<dynamic>> _surahsFuture;
 
-class QuranPage extends StatelessWidget {
-  const QuranPage({super.key});
-  static const surahs = [
-    'الفاتحة','البقرة','آل عمران','النساء','المائدة','الأنعام','الأعراف','الأنفال','التوبة','يونس',
-    'هود','يوسف','الرعد','إبراهيم','الحجر','النحل','الإسراء','الكهف','مريم','طه',
-    'الأنبياء','الحج','المؤمنون','النور','الفرقان','الشعراء','النمل','القصص','العنكبوت','الروم',
-    'لقمان','السجدة','الأحزاب','سبأ','فاطر','يس','الصافات','ص','الزمر','غافر',
-    'فصلت','الشورى','الزخرف','الدخان','الجاثية','الأحقاف','محمد','الفتح','الحجرات','ق',
-    'الذاريات','الطور','النجم','القمر','الرحمن','الواقعة','الحديد','المجادلة','الحشر','الممتحنة',
-    'الصف','الجمعة','المنافقون','التغابن','الطلاق','التحريم','الملك','القلم','الحاقة','المعارج',
-    'نوح','الجن','المزمل','المدثر','القيامة','الإنسان','المرسلات','النبأ','النازعات','عبس',
-    'التكوير','الانفطار','المطففين','الانشقاق','البروج','الطارق','الأعلى','الغاشية','الفجر','البلد',
-    'الشمس','الليل','الضحى','الشرح','التين','العلق','القدر','البينة','الزلزلة','العاديات',
-    'القارعة','التكاثر','العصر','الهمزة','الفيل','قريش','الماعون','الكوثر','الكافرون','النصر',
-    'المسد','الإخلاص','الفلق','الناس',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _surahsFuture = _loadSurahs();
+  }
 
-  // بدايات السور حسب أرقام صفحات ملف PDF نفسه (ترقيم الصفحات يبدأ من 1).
-  static const surahPdfPages = [
-    1,2,45,69,95,115,136,160,169,187,199,212,225,231,237,
-    242,255,266,277,284,294,302,311,319,329,335,345,354,364,
-    371,377,381,383,393,399,404,410,417,422,431,439,445,451,
-    457,460,464,468,472,477,479,482,485,487,490,493,496,499,
-    504,507,510,513,515,516,518,520,522,524,526,529,531,533,
-    534,537,538,540,542,544,545,547,548,550,551,552,553,554,
-    555,556,556,557,559,559,560,561,561,562,562,563,563,564,
-    564,565,565,566,566,566,567,567,567,568,568,568,569,569,569,
-  ];
+  Future<List<dynamic>> _loadSurahs() async {
+    final raw = await rootBundle.loadString('assets/quran-uthmani.json');
+    final data = jsonDecode(raw) as Map<String, dynamic>;
+    return data['surahs'] as List<dynamic>;
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         children: [
-          const PageHeader(title:'القرآن الكريم',icon:Icons.menu_book),
+          const PageHeader(title: 'القرآن الكريم', icon: Icons.menu_book),
           const Padding(
-            padding: EdgeInsets.all(15),
-            child: Text('اختر السورة لفتحها من بدايتها في المصحف',
-              style:TextStyle(color:green,fontSize:17,fontWeight:FontWeight.bold)),
+            padding: EdgeInsets.fromLTRB(16, 10, 16, 14),
+            child: Text(
+              'اختر السورة لقراءة آياتها بالترتيب',
+              style: TextStyle(color: green, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal:14),
-              itemCount:surahs.length,
-              itemBuilder:(context,index) {
-                final pdfPage=surahPdfPages[index];
-                return Card(
-                  color:Colors.white,
-                  child:ListTile(
-                    leading:CircleAvatar(
-                      backgroundColor:green,
-                      child:Text('\${index+1}',style:const TextStyle(color:gold))),
-                    title:Text('سورة \${surahs[index]}',
-                      style:const TextStyle(color:green,fontWeight:FontWeight.bold)),
-                    subtitle:Text('صفحة $pdfPage في المصحف',
-                      style:const TextStyle(color:Colors.black54)),
-                    trailing:const Icon(Icons.arrow_forward_ios,color:gold,size:17),
-                    onTap:() {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder:(_)=>QuranReaderPage(
-                          surahName:surahs[index],initialPdfPage:pdfPage)));
-                    },
-                  ),
+            child: FutureBuilder<List<dynamic>>(
+              future: _surahsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const Center(child: CircularProgressIndicator(color: green));
+                }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(child: Text('تعذر تحميل المصحف. يرجى إعادة تشغيل التطبيق.'));
+                }
+                final surahs = snapshot.data!;
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  itemCount: surahs.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == surahs.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(18),
+                        child: Text(
+                          'النص القرآني: Tanzil Project – Uthmani v1.1\nhttps://tanzil.net',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black54, fontSize: 11),
+                        ),
+                      );
+                    }
+                    final surah = Map<String, dynamic>.from(surahs[index] as Map);
+                    final name = surah['name'] as String;
+                    final count = (surah['ayahs'] as List).where((a) => (a['number'] as int) > 0).length;
+                    return Card(
+                      color: Colors.white,
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: green,
+                          child: Text(
+                            '\${index + 1}',
+                            style: const TextStyle(color: gold, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        title: Text(
+                          'سورة $name',
+                          style: const TextStyle(color: green, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text('$count آية  •  \${surah['loc'] ?? ''}'),
+                        trailing: const Icon(Icons.menu_book, color: gold),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => QuranReaderPage(surah: surah)),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -378,53 +396,100 @@ class QuranPage extends StatelessWidget {
   }
 }
 
-class QuranReaderPage extends StatefulWidget {
-  final String surahName;
-  final int initialPdfPage;
-  const QuranReaderPage({super.key,required this.surahName,required this.initialPdfPage});
-  @override
-  State<QuranReaderPage> createState()=>_QuranReaderPageState();
-}
+class QuranReaderPage extends StatelessWidget {
+  final Map<String, dynamic> surah;
 
-class _QuranReaderPageState extends State<QuranReaderPage> {
-  late final PdfControllerPinch _pdfController;
-  int _currentPage=1;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentPage=widget.initialPdfPage;
-    _pdfController=PdfControllerPinch(
-      document:PdfDocument.openAsset('assets/Holy-Quran-Mushaf.pdf'),
-      initialPage:widget.initialPdfPage,
-    );
-  }
-
-  @override
-  void dispose() {
-    _pdfController.dispose();
-    super.dispose();
-  }
+  const QuranReaderPage({super.key, required this.surah});
 
   @override
   Widget build(BuildContext context) {
+    final name = surah['name'] as String;
+    final ayahs = surah['ayahs'] as List<dynamic>;
+
     return Scaffold(
-      backgroundColor:cream,
-      appBar:AppBar(
-        backgroundColor:green,
-        foregroundColor:Colors.white,
-        title:Text('سورة \${widget.surahName}'),
-        centerTitle:true,
-        actions:[
-          Center(child:Padding(
-            padding:const EdgeInsetsDirectional.only(end:14),
-            child:Text('$_currentPage / 569',style:const TextStyle(fontSize:13)))),
+      backgroundColor: cream,
+      appBar: AppBar(
+        backgroundColor: green,
+        foregroundColor: Colors.white,
+        title: Text('سورة $name'),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(14, 18, 14, 30),
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+            decoration: BoxDecoration(color: green, borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: [
+                Text(name, style: const TextStyle(color: gold, fontSize: 25, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 7),
+                Text(
+                  '\${surah['loc'] ?? ''}  •  \${ayahs.where((a) => (a['number'] as int) > 0).length} آية',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          ...ayahs.map((item) {
+            final ayah = Map<String, dynamic>.from(item as Map);
+            final number = ayah['number'] as int;
+            final text = ayah['text'] as String;
+
+            if (number == 0) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
+                  style: const TextStyle(color: green, fontSize: 25, height: 2, fontWeight: FontWeight.w600),
+                ),
+              );
+            }
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 9),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(color: gold.withOpacity(0.35)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    margin: const EdgeInsetsDirectional.only(start: 10, top: 4),
+                    decoration: const BoxDecoration(color: green, shape: BoxShape.circle),
+                    child: Text(
+                      '$number',
+                      style: const TextStyle(color: gold, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      text,
+                      textAlign: TextAlign.justify,
+                      textDirection: TextDirection.rtl,
+                      style: const TextStyle(color: Color(0xFF18251F), fontSize: 24, height: 2.05),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
-      body:PdfViewPinch(
-        controller:_pdfController,
-        onPageChanged:(page) {
-          if(mounted) setState(()=>_currentPage=page);
+    );
+  }
+}
+
+// المسبحة الإلكترونية=page);
         },
       ),
     );
