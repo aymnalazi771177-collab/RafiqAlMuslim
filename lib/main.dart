@@ -960,70 +960,68 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool notifications = true;
   bool vibration = true;
+  bool ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      notifications = prefs.getBool('setting_notifications') ?? true;
+      vibration = prefs.getBool('setting_vibration') ?? true;
+      ready = true;
+    });
+  }
+
+  Future<void> _saveSetting(String key, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          const PageHeader(
-            title: 'الإعدادات',
-            icon: Icons.settings,
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Card(
-                  color: Colors.white,
-                  child: SwitchListTile(
-                    secondary: const Icon(
-                      Icons.notifications_outlined,
-                      color: gold,
-                    ),
-                    title: const Text('التنبيهات'),
-                    value: notifications,
-                    activeColor: green,
-                    onChanged: (value) {
-                      setState(() => notifications = value);
-                    },
-                  ),
-                ),
-                Card(
-                  color: Colors.white,
-                  child: SwitchListTile(
-                    secondary: const Icon(
-                      Icons.vibration,
-                      color: gold,
-                    ),
-                    title: const Text('الاهتزاز'),
-                    value: vibration,
-                    activeColor: green,
-                    onChanged: (value) {
-                      setState(() => vibration = value);
-                    },
-                  ),
-                ),
-                const Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: Icon(Icons.info_outline, color: gold),
-                    title: Text('عن التطبيق'),
-                    subtitle: Text('رفيق المسلم - رفيقك إلى الطمأنينة'),
-                  ),
-                ),
-                const Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: Icon(Icons.favorite, color: gold),
-                    title: Text('نسأل الله أن ينفع بهذا العمل'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return SafeArea(child: Column(children: [
+      const PageHeader(title: 'الإعدادات', icon: Icons.settings),
+      Expanded(child: ListView(padding: const EdgeInsets.all(16), children: [
+        Card(color: Colors.white, child: SwitchListTile(
+          secondary: const Icon(Icons.notifications_outlined, color: gold),
+          title: const Text('التنبيهات'),
+          subtitle: const Text('حفظ تفضيل التنبيهات داخل التطبيق'),
+          value: notifications, activeColor: green,
+          onChanged: ready ? (value) {
+            setState(() => notifications = value);
+            _saveSetting('setting_notifications', value);
+          } : null,
+        )),
+        Card(color: Colors.white, child: SwitchListTile(
+          secondary: const Icon(Icons.vibration, color: gold),
+          title: const Text('الاهتزاز'),
+          subtitle: const Text('حفظ تفضيل الاهتزاز داخل التطبيق'),
+          value: vibration, activeColor: green,
+          onChanged: ready ? (value) {
+            setState(() => vibration = value);
+            _saveSetting('setting_vibration', value);
+          } : null,
+        )),
+        const Card(color: Colors.white, child: ListTile(
+          leading: Icon(Icons.info_outline, color: gold),
+          title: Text('عن التطبيق'),
+          subtitle: Text('رفيق المسلم - رفيقك إلى الطمأنينة'),
+        )),
+        const Card(color: Colors.white, child: ListTile(
+          leading: Icon(Icons.favorite, color: gold),
+          title: Text('نسأل الله أن ينفع بهذا العمل'),
+        )),
+        const Padding(
+          padding: EdgeInsets.all(12),
+          child: Text('التطبيق يضم القرآن الكريم والأذكار والمسبحة وقصص الأنبياء ومواقيت الصلاة المحسوبة دون إنترنت.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, height: 1.7)),
+        ),
+      ])),
+    ]));
   }
 }
