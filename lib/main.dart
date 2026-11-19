@@ -352,7 +352,7 @@ class _QuranPageState extends State<QuranPage> {
                       return const Padding(
                         padding: EdgeInsets.all(18),
                         child: Text(
-                          'النص القرآني: Tanzil Project – Uthmani v1.1\nhttps://tanzil.net',
+                          'النص القرآني: مشروع تنزيل – الرسم العثماني، الإصدار 1.1\nTanzil.net • CC BY 3.0',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.black54, fontSize: 11),
                         ),
