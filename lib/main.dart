@@ -837,75 +837,75 @@ class _AzkarPageState extends State<AzkarPage> {
 
 class StoriesPage extends StatelessWidget {
   const StoriesPage({super.key});
-
-  static const stories = [
-    'آدم عليه السلام',
-    'نوح عليه السلام',
-    'إبراهيم عليه السلام',
-    'يوسف عليه السلام',
-    'موسى عليه السلام',
-    'عيسى عليه السلام',
-    'محمد ﷺ',
+  static const List<Map<String, String>> stories = [
+    {'name':'آدم عليه السلام','text':'خلق الله آدم من طين، وعلّمه الأسماء، وأسكنه وزوجه الجنة. ثم وقعت الزلة، فتاب آدم إلى ربه فتاب عليه وهداه.','ref':'البقرة: 30–39، طه: 115–123'},
+    {'name':'إدريس عليه السلام','text':'ذكر الله إدريس بالصدق والنبوة ورفعة المكانة، وأثنى عليه بأنه كان صديقًا نبيًا. ولم يفصل القرآن أحداثًا كثيرة من حياته.','ref':'مريم: 56–57، الأنبياء: 85'},
+    {'name':'نوح عليه السلام','text':'دعا نوح قومه إلى عبادة الله ليلًا ونهارًا، وصبر على تكذيبهم زمنًا طويلًا. فأمره الله بصنع السفينة، ونجّاه ومن آمن معه، وأغرق المكذبين بالطوفان.','ref':'هود: 25–49، نوح: 1–28'},
+    {'name':'هود عليه السلام','text':'أرسل الله هودًا إلى عاد، فدعاهم إلى التوحيد وترك الاستكبار. كذبوه فأهلكهم الله بريح صرصر عاتية، ونجّى هودًا والذين آمنوا معه.','ref':'الأعراف: 65–72، الحاقة: 6–8'},
+    {'name':'صالح عليه السلام','text':'أرسل صالح إلى ثمود، وأيّده الله بالناقة آية لهم، وأمرهم ألا يمسوها بسوء. فعقروها واستكبروا، فأخذتهم الرجفة ونجّى الله صالحًا والمؤمنين.','ref':'الأعراف: 73–79، الشمس: 11–15'},
+    {'name':'إبراهيم عليه السلام','text':'حاجّ إبراهيم قومه في عبادة الأصنام، وكسر أصنامهم ليبيّن عجزها، فألقوه في النار فجعلها الله بردًا وسلامًا. وابتلاه الله فوفّى، ورفع قواعد البيت مع إسماعيل.','ref':'الأنبياء: 51–70، البقرة: 124–129'},
+    {'name':'لوط عليه السلام','text':'أرسل الله لوطًا إلى قوم ارتكبوا الفاحشة، فنهاهم عنها ودعاهم إلى التقوى. أصروا على المنكر، فنجّى الله لوطًا وأهله إلا امرأته، وأهلك القوم.','ref':'الأعراف: 80–84، هود: 77–83'},
+    {'name':'إسماعيل عليه السلام','text':'كان إسماعيل صادق الوعد، وكان يأمر أهله بالصلاة والزكاة. وشارك أباه إبراهيم في رفع قواعد الكعبة، وظهر في قصته التسليم لأمر الله عند الابتلاء.','ref':'مريم: 54–55، البقرة: 125–129، الصافات: 102–107'},
+    {'name':'إسحاق عليه السلام','text':'بشّر الله إبراهيم وزوجه بإسحاق، وجعله نبيًا من الصالحين، وبارك عليه وعلى يعقوب. وذكره القرآن ضمن أنبياء الله الذين هداهم واجتباهم.','ref':'هود: 71–73، الصافات: 112–113، الأنعام: 84'},
+    {'name':'يعقوب عليه السلام','text':'يعقوب هو إسرائيل، وكان نبيًا صابرًا. ابتُلي بفقد يوسف، لكنه لم ييأس من روح الله، وردّ الله إليه بصره واجتمع بأهله.','ref':'يوسف: 83–101'},
+    {'name':'يوسف عليه السلام','text':'رأى يوسف رؤيا فحسده إخوته وألقوه في الجب. بيع في مصر، وابتلي بالسجن فصبر، ثم أظهر الله براءته ومكّنه في الأرض، واجتمع بأهله وتحققت رؤياه.','ref':'سورة يوسف كاملة'},
+    {'name':'أيوب عليه السلام','text':'ابتلى الله أيوب بالضر، فصبر ولم يقطع رجاءه من ربه، ودعا: أني مسني الضر وأنت أرحم الراحمين. فاستجاب الله له وكشف ما به ورد عليه أهله ومثلهم معهم.','ref':'الأنبياء: 83–84، ص: 41–44'},
+    {'name':'شعيب عليه السلام','text':'دعا شعيب أهل مدين إلى عبادة الله وإيفاء الكيل والميزان وعدم بخس الناس أشياءهم. كذبوه وهددوه، فنجّى الله شعيبًا والذين آمنوا وأخذ الظالمين.','ref':'الأعراف: 85–93، هود: 84–95'},
+    {'name':'موسى عليه السلام','text':'ولد موسى في زمن فرعون، فأوحى الله إلى أمه أن تلقيه في اليم، فالتقطه آل فرعون. أرسله الله إلى فرعون ومعه هارون، وأيّده بالآيات، ونجّى بني إسرائيل وشق لهم البحر.','ref':'طه: 9–79، القصص: 3–46، الشعراء: 52–68'},
+    {'name':'هارون عليه السلام','text':'كان هارون نبيًا وأخًا لموسى ووزيره، طلب موسى من ربه أن يشد أزره به. دعا هارون بني إسرائيل إلى الحق، وصبر حين فُتنوا بالعجل أثناء غياب موسى.','ref':'طه: 29–36، طه: 90–94'},
+    {'name':'ذو الكفل عليه السلام','text':'ذكره الله في جملة الصابرين والأخيار، وأثنى عليه مع إسماعيل وإدريس. ولم يذكر القرآن تفاصيل قصته، فنثبت ما ورد دون الجزم بتفاصيل لم يذكرها الوحي.','ref':'الأنبياء: 85–86، ص: 48'},
+    {'name':'داود عليه السلام','text':'آتاه الله الملك والحكمة، وأنزل عليه الزبور، وسخّر معه الجبال والطير يسبحن. وكان ذا قوة في العبادة، وفصل الله بين الخصوم وأرشده إلى العدل.','ref':'ص: 17–26، سبأ: 10–11'},
+    {'name':'سليمان عليه السلام','text':'ورث سليمان داود في النبوة والملك، وعلّمه الله منطق الطير وسخّر له الجن والريح. تفقد الهدهد، ودعا ملكة سبأ إلى الإسلام، وشكر الله على نعمه.','ref':'النمل: 15–44، سبأ: 12–14'},
+    {'name':'إلياس عليه السلام','text':'أرسل الله إلياس إلى قومه فأنكر عليهم عبادتهم بعلًا، ودعاهم إلى عبادة الله وحده. وذكره الله في عباده المؤمنين وترك عليه ثناءً حسنًا.','ref':'الصافات: 123–132'},
+    {'name':'اليسع عليه السلام','text':'ذكر الله اليسع في جملة الأخيار والأنبياء الذين فضلهم وهدى آباءهم وذرياتهم. ولم يفصل القرآن أحداث دعوته، فنقف عند الثناء القرآني عليه.','ref':'الأنعام: 86، ص: 48'},
+    {'name':'يونس عليه السلام','text':'خرج يونس مغاضبًا، فابتلعه الحوت، فنادى في الظلمات أن لا إله إلا أنت سبحانك إني كنت من الظالمين. فاستجاب الله له ونجّاه، وأرسله إلى قوم آمنوا فمتعهم إلى حين.','ref':'الأنبياء: 87–88، الصافات: 139–148'},
+    {'name':'زكريا عليه السلام','text':'دعا زكريا ربه أن يرزقه ذرية طيبة على كبر سنه، فبشره الله بيحيى. وكان قائمًا بالدعاء والمسارعة في الخيرات والخشوع لله.','ref':'آل عمران: 37–41، مريم: 2–11'},
+    {'name':'يحيى عليه السلام','text':'آتاه الله الحكم صبيًا، وجعله حنانًا وزكاة وكان تقيًا بارًا بوالديه، ولم يكن جبارًا عصيًا. وبشّر الله به زكريا استجابة لدعائه.','ref':'مريم: 7–15، آل عمران: 39'},
+    {'name':'عيسى عليه السلام','text':'خلق الله عيسى بكلمته من أم بلا أب، وأيّده بالبينات وروح القدس. تكلم في المهد، ودعا بني إسرائيل إلى عبادة الله، وأجرى الله على يديه معجزات بإذنه، ورفعه إليه.','ref':'آل عمران: 45–55، مريم: 16–36، المائدة: 110–120'},
+    {'name':'محمد ﷺ','text':'خاتم الأنبياء، أرسله الله رحمة للعالمين بشيرًا ونذيرًا. نزل عليه القرآن، ودعا إلى التوحيد، وصبر على الأذى، وهاجر، وأقام مجتمع الإيمان، وأتم الله به الدين.','ref':'الأنبياء: 107، الأحزاب: 40، الفتح: 29'},
   ];
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          const PageHeader(
-            title: 'قصص الأنبياء',
-            icon: Icons.auto_stories,
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(15),
-              itemCount: stories.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.menu_book,
-                      color: gold,
-                    ),
-                    title: Text(
-                      'قصة ${stories[index]}',
-                      style: const TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: green,
-                      size: 16,
-                    ),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('قصة ${stories[index]}'),
-                          content: const Text(
-                            'سيتم إضافة القصة كاملة '
-                            'مع مراجعة محتواها في تحديث المحتوى.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('إغلاق'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+    return SafeArea(child: Column(children: [
+      const PageHeader(title: 'قصص الأنبياء', icon: Icons.auto_stories),
+      const Padding(padding: EdgeInsets.all(12), child: Text('قصص موجزة مستندة إلى الآيات القرآنية، مع مواضع الرجوع إلى السور', textAlign: TextAlign.center, style: TextStyle(color: green))),
+      Expanded(child: ListView.builder(
+        padding: const EdgeInsets.all(15), itemCount: stories.length,
+        itemBuilder: (context, index) {
+          final story = stories[index];
+          return Card(color: Colors.white, child: ListTile(
+            leading: CircleAvatar(backgroundColor: green, child: Text('\${index + 1}', style: const TextStyle(color: gold))),
+            title: Text(story['name']!, style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
+            subtitle: Text(story['ref']!, maxLines: 1, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(Icons.arrow_forward_ios, color: gold, size: 16),
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StoryDetailPage(story: story))),
+          ));
+        },
+      )),
+    ]));
+  }
+}
+class StoryDetailPage extends StatelessWidget {
+  final Map<String, String> story;
+  const StoryDetailPage({super.key, required this.story});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cream,
+      appBar: AppBar(backgroundColor: green, foregroundColor: gold, title: Text(story['name']!)),
+      body: ListView(padding: const EdgeInsets.all(20), children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: gold)),
+          child: Text(story['text']!, textAlign: TextAlign.justify, style: const TextStyle(color: green, fontSize: 19, height: 2)),
+        ),
+        const SizedBox(height: 18),
+        const Text('مواضع القصة في القرآن الكريم', style: TextStyle(color: green, fontWeight: FontWeight.bold, fontSize: 17)),
+        const SizedBox(height: 8),
+        Text(story['ref']!, style: const TextStyle(color: Colors.black87, height: 1.8)),
+        const SizedBox(height: 20),
+        const Text('هذا ملخص للتذكير، والمرجع هو الآيات المذكورة.', style: TextStyle(color: Colors.black54, fontSize: 12)),
+      ]),
     );
   }
 }
