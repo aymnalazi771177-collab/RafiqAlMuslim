@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pdfx/pdfx.dart';
 
 const Color green = Color(0xFF073F35);
 const Color darkGreen = Color(0xFF052F28);
@@ -316,7 +315,6 @@ class QuranPage extends StatefulWidget {
 }
 
 class _QuranPageState extends State<QuranPage> {
-  static const List<int> _surahStartPages = [1,2,45,69,95,115,136,160,169,187,199,212,225,231,237,242,255,266,277,284,294,302,311,319,329,335,345,354,364,371,377,381,383,393,399,404,410,417,422,431,439,445,451,457,460,464,468,472,477,479,482,485,487,490,493,496,499,504,507,510,513,515,516,518,520,522,524,526,529,531,533,534,537,538,540,542,544,545,547,548,550,551,552,553,554,555,556,556,557,559,559,560,561,561,562,562,563,563,564,564,565,565,566,566,566,567,567,567,568,568,568,569,569,569];
   late final Future<List<dynamic>> _surahsFuture;
 
   @override
@@ -391,7 +389,7 @@ class _QuranPageState extends State<QuranPage> {
                         trailing: const Icon(Icons.menu_book, color: gold),
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => QuranReaderPage(surah: surah, surahNumber: index + 1, startPage: _surahStartPages[index])),
+                            MaterialPageRoute(builder: (_) => QuranReaderPage(surah: surah, surahNumber: index + 1, startPage: 1)),
                           );
                         },
                       ),
@@ -407,7 +405,7 @@ class _QuranPageState extends State<QuranPage> {
   }
 }
 
-class QuranReaderPage extends StatefulWidget {
+class QuranReaderPage extends StatelessWidget {
   final Map<String, dynamic> surah;
   final int surahNumber;
   final int startPage;
@@ -419,70 +417,143 @@ class QuranReaderPage extends StatefulWidget {
     required this.startPage,
   });
 
-  @override
-  State<QuranReaderPage> createState() => _QuranReaderPageState();
-}
-
-class _QuranReaderPageState extends State<QuranReaderPage> {
-  late final PdfControllerPinch _pdfController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pdfController = PdfControllerPinch(
-      document: PdfDocument.openAsset('assets/Holy-Quran-Mushaf.pdf'),
-      initialPage: widget.startPage,
-    );
-  }
-
-  @override
-  void dispose() {
-    _pdfController.dispose();
-    super.dispose();
+  String _arabicNumber(int value) {
+    const digits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return value.toString().split('').map((d) => digits[int.parse(d)]).join();
   }
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.surah['name'] as String;
+    final name = surah['name'] as String? ?? '';
+    final ayahs = (surah['ayahs'] as List?) ?? const [];
+
+    final spans = <InlineSpan>[];
+    for (final item in ayahs) {
+      final ayah = Map<String, dynamic>.from(item as Map);
+      final text = (ayah['text'] ?? ayah['text_uthmani'] ?? ayah['content'] ?? '').toString();
+      final number = (ayah['number'] as num?)?.toInt() ?? 0;
+      if (text.isEmpty) continue;
+      spans.add(TextSpan(text: '$text '));
+      spans.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFF1E5CE),
+              border: Border.all(color: gold, width: 1.2),
+            ),
+            child: Text(
+              _arabicNumber(number),
+              style: const TextStyle(
+                color: green,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+      spans.add(const TextSpan(text: '  '));
+    }
+
     return Scaffold(
       backgroundColor: cream,
       appBar: AppBar(
         backgroundColor: green,
-        foregroundColor: Colors.white,
+        foregroundColor: gold,
         title: Text('سورة $name'),
         centerTitle: true,
       ),
-      body: PdfViewPinch(
-        controller: _pdfController,
-        minScale: 1,
-        maxScale: 5,
-        builders: PdfViewPinchBuilders<DefaultBuilderOptions>(
-          options: const DefaultBuilderOptions(),
-          documentLoaderBuilder: (_) =>
-              const Center(child: CircularProgressIndicator(color: green)),
-          pageLoaderBuilder: (_) =>
-              const Center(child: CircularProgressIndicator(color: green)),
-          errorBuilder: (_, error) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'تعذر فتح المصحف. تأكد من وجود ملف المصحف داخل التطبيق.\n$error',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: green),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(10),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F0E5),
+              border: Border.all(color: green, width: 5),
+              boxShadow: [
+                BoxShadow(
+                  color: green.withOpacity(0.12),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(15, 18, 15, 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFCF4),
+                border: Border.all(color: gold, width: 1.3),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEDE2CE),
+                      border: Border.all(color: gold, width: 2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        const Icon(Icons.local_florist, color: Color(0xFF9A7440), size: 27),
+                        Expanded(
+                          child: Text(
+                            'سُورَةُ $name',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Color(0xFF352719),
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const Icon(Icons.local_florist, color: Color(0xFF9A7440), size: 27),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  if (surahNumber != 1 && surahNumber != 9)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 18),
+                      child: Text(
+                        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF211B15),
+                          fontSize: 22,
+                          height: 2,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  SelectableText.rich(
+                    TextSpan(
+                      style: const TextStyle(
+                        color: Color(0xFF211B15),
+                        fontSize: 23,
+                        height: 2.15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      children: spans,
+                    ),
+                    textAlign: TextAlign.justify,
+                    textDirection: TextDirection.rtl,
+                  ),
+                  const SizedBox(height: 22),
+                  const Icon(Icons.auto_awesome, color: Color(0xFF9A7440), size: 20),
+                ],
               ),
             ),
           ),
-          builder: (context, builders, state, loadedBuilder, document, loadingError) {
-            if (state == PdfLoadingState.error) {
-              return builders.errorBuilder?.call(context, loadingError!) ??
-                  const Center(child: Text('تعذر فتح المصحف'));
-            }
-            if (state == PdfLoadingState.loading) {
-              return builders.documentLoaderBuilder?.call(context) ??
-                  const Center(child: CircularProgressIndicator());
-            }
-            return loadedBuilder(context);
-          },
         ),
       ),
     );
