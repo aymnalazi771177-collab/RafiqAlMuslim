@@ -251,7 +251,18 @@ class _QuranReaderState extends State<QuranReader> {
         ),
       ),
     );
-    if (selected != null) _goToPage(selected);
+    if (selected != null && mounted) {
+      // Recreate the PDF reader at the selected surah's first page.
+      // This avoids retaining the previous PDF viewport position.
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: QuranReader(initialPage: selected),
+          ),
+        ),
+      );
+    }
   }
 
   @override
