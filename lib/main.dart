@@ -188,7 +188,7 @@ class _QuranReaderState extends State<QuranReader> {
     final sections = quran.getPageData(page);
     final first = sections.first;
     final juz = quran.getJuzNumber(first['surah'] as int, first['start'] as int);
-    final url = 'https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/' + page.toString() + '.png';
+    final url = 'https://raw.githubusercontent.com/ahmedabdalharith/Quran-Mushaf-Data/main/data/images/hafs-tajweed/' + page.toString().padLeft(3, '0') + '.webp';
     return Scaffold(
       backgroundColor: const Color(0xFFEDE5D3),
       appBar: AppBar(title: Text('المصحف الشريف • صفحة ' + page.toString()),
