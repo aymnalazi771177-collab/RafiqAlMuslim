@@ -7,6 +7,9 @@ import 'package:adhan_dart/adhan_dart.dart';
 import 'package:geolocator/geolocator.dart';
 import 'data/prophet_stories.dart';
 
+// Page numbers taken from the embedded 569-page PDF's own bookmarks.
+const List<int> quranPdfSurahStartPages = [1,2,45,69,95,115,136,160,169,187,199,212,225,231,237,242,255,266,277,284,294,302,311,319,329,335,345,354,364,371,377,381,383,393,399,404,410,417,422,431,439,445,451,457,460,464,468,472,477,479,482,485,487,490,493,496,499,504,507,510,513,515,516,518,520,522,524,526,529,531,533,534,537,538,540,542,544,545,547,548,550,551,552,553,554,555,556,556,557,559,559,560,561,561,562,562,563,563,564,564,565,565,566,566,566,567,567,567,568,568,568,569,569,569];
+
 const green=Color(0xFF073F35), darkGreen=Color(0xFF052F28), gold=Color(0xFFD5B16A), cream=Color(0xFFF8F4E9);
 
 Future<void> main() async {
@@ -108,7 +111,7 @@ class _QuranPageState extends State<QuranPage> {
       ])),
       Expanded(child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 12), itemCount: nums.length,
         itemBuilder: (c, i) {
-          final n = nums[i], firstPage = quran.getPageNumber(n, 1);
+          final n = nums[i], firstPage = quranPdfSurahStartPages[n - 1];
           return Card(child: ListTile(
             leading: CircleAvatar(backgroundColor: green, child: Text(n.toString(), style: const TextStyle(color: gold))),
             title: Text('سورة ' + quran.getSurahNameArabic(n), style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -239,7 +242,7 @@ class _QuranReaderState extends State<QuranReader> {
                         subtitle: Text(quran.getVerseCount(surah).toString() + ' آية'),
                         onTap: () => Navigator.pop(
                           sheetContext,
-                          quran.getPageNumber(surah, 1),
+                          quranPdfSurahStartPages[surah - 1],
                         ),
                       );
                     },
