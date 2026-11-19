@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quran/quran.dart' as quran;
@@ -134,114 +135,209 @@ class _QuranPageState extends State<QuranPage> {
 class QuranReader extends StatefulWidget {
   final int initialPage;
   const QuranReader({super.key, this.initialPage = 1});
-  @override State<QuranReader> createState() => _QuranReaderState();
+  @override
+  State<QuranReader> createState() => _QuranReaderState();
 }
+
 class _QuranReaderState extends State<QuranReader> {
   late int page;
-  @override void initState() { super.initState(); page = widget.initialPage.clamp(1, 604); _savePage(); }
-  Future<void> _savePage() async {
-    final p = await SharedPreferences.getInstance();
-    await p.setInt('last_page', page);
-    final sections = quran.getPageData(page);
+  bool failed = false;
+  bool loading = true;
+  final PdfViewerController controller = PdfViewerController();
+
+  static final Uri mushafUri = Uri.parse(
+    'https://www.pdfquran.com/download/standard1/standard1-quran.pdf',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    page = widget.initialPage.clamp(1, 604);
+  }
+
+  Future<void> _savePage(int? nextPage) async {
+    if (nextPage == null || nextPage < 1 || nextPage > 604) return;
+    if (page != nextPage && mounted) setState(() => page = nextPage);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_page', nextPage);
+    final sections = quran.getPageData(nextPage);
     if (sections.isNotEmpty) {
-      await p.setInt('last_surah', sections.first['surah'] as int);
-      await p.setInt('last_ayah', sections.first['start'] as int);
+      await prefs.setInt('last_surah', sections.first['surah'] as int);
+      await prefs.setInt('last_ayah', sections.first['start'] as int);
     }
   }
-  void _go(int n) {
-    if (n < 1 || n > 604) return;
-    setState(() => page = n);
-    _savePage();
+
+  void _goToPage(int nextPage) {
+    if (nextPage < 1 || nextPage > 604 || !controller.isReady) return;
+    controller.goToPage(pageNumber: nextPage);
+    _savePage(nextPage);
   }
+
   Future<void> _pickPage() async {
-    final controller = TextEditingController(text: page.toString());
-    final value = await showDialog<int>(context: context, builder: (d) => AlertDialog(
-      title: const Text('الانتقال إلى صفحة'),
-      content: TextField(controller: controller, keyboardType: TextInputType.number,
-        decoration: const InputDecoration(helperText: 'أدخل رقمًا من 1 إلى 604')),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(d), child: const Text('إلغاء')),
-        FilledButton(onPressed: () {
-          final n = int.tryParse(controller.text.trim());
-          if (n != null && n >= 1 && n <= 604) Navigator.pop(d, n);
-        }, child: const Text('انتقال')),
-      ]));
-    controller.dispose();
-    if (value != null) _go(value);
+    final input = TextEditingController(text: page.toString());
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('الانتقال إلى صفحة'),
+        content: TextField(
+          controller: input,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(hintText: 'أدخل رقمًا من 1 إلى 604'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('إلغاء'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = int.tryParse(input.text.trim());
+              if (value != null && value >= 1 && value <= 604) {
+                Navigator.pop(dialogContext, value);
+              }
+            },
+            child: const Text('انتقال'),
+          ),
+        ],
+      ),
+    );
+    input.dispose();
+    if (selected != null) _goToPage(selected);
   }
+
   Future<void> _pickSurah() async {
-    final value = await showModalBottomSheet<int>(context: context, isScrollControlled: true,
-      builder: (d) => Directionality(textDirection: TextDirection.rtl, child: SafeArea(
-        child: SizedBox(height: MediaQuery.of(d).size.height * .78, child: Column(children: [
-          const Padding(padding: EdgeInsets.all(16), child: Text('فهرس السور', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold))),
-          Expanded(child: ListView.builder(itemCount: 114, itemBuilder: (d, i) {
-            final n = i + 1;
-            return ListTile(leading: CircleAvatar(backgroundColor: green, child: Text(n.toString(), style: const TextStyle(color: gold))),
-              title: Text('سورة ' + quran.getSurahNameArabic(n)),
-              subtitle: Text(quran.getVerseCount(n).toString() + ' آية'),
-              onTap: () => Navigator.pop(d, quran.getPageNumber(n, 1)));
-          })),
-        ])))));
-    if (value != null) _go(value);
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(sheetContext).size.height * .78,
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'فهرس السور',
+                    style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: 114,
+                    itemBuilder: (context, index) {
+                      final surah = index + 1;
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: green,
+                          child: Text(surah.toString(), style: const TextStyle(color: gold)),
+                        ),
+                        title: Text('سورة ' + quran.getSurahNameArabic(surah)),
+                        subtitle: Text(quran.getVerseCount(surah).toString() + ' آية'),
+                        onTap: () => Navigator.pop(
+                          sheetContext,
+                          quran.getPageNumber(surah, 1),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (selected != null) _goToPage(selected);
   }
-  @override Widget build(BuildContext c) {
-    final sections = quran.getPageData(page);
-    final first = sections.first;
-    final juz = quran.getJuzNumber(first['surah'] as int, first['start'] as int);
-    final url = 'https://www.pdfquran.com/quran-pages/standard1/' + page.toString() + '.jpg';
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEDE5D3),
-      appBar: AppBar(title: Text('المصحف الشريف • صفحة ' + page.toString()),
+      appBar: AppBar(
+        title: Text('المصحف الشريف • صفحة ' + page.toString() + ' من 604'),
         actions: [
-          IconButton(tooltip: 'فهرس السور', onPressed: _pickSurah, icon: const Icon(Icons.list_alt)),
-          IconButton(tooltip: 'رقم الصفحة', onPressed: _pickPage, icon: const Icon(Icons.find_in_page)),
-        ]),
-      body: Column(children: [
-        Padding(padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('الجزء ' + juz.toString(), style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
-            Text('صفحة ' + page.toString() + ' من 604', style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
-          ])),
-        Expanded(child: Center(child: AspectRatio(aspectRatio: 0.69,
-          child: Container(margin: const EdgeInsets.fromLTRB(9, 3, 9, 8),
-            decoration: BoxDecoration(color: const Color(0xFFFFFCF3), border: Border.all(color: const Color(0xFFC49A45), width: 2),
-              boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 7, offset: Offset(0, 3))]),
-            child: ClipRect(child: InteractiveViewer(minScale: 1, maxScale: 3,
-              child: Image.network(url, fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(color: green)),
-                errorBuilder: (context, error, stack) => _fallbackPage(page, sections)))))))),
-        Container(color: Theme.of(c).cardColor, padding: const EdgeInsets.fromLTRB(10, 7, 10, 10),
-          child: Row(children: [
-            Expanded(child: OutlinedButton.icon(onPressed: page > 1 ? () => _go(page - 1) : null,
-              icon: const Icon(Icons.chevron_right), label: const Text('السابقة'))),
-            const SizedBox(width: 9),
-            Expanded(child: FilledButton.icon(onPressed: page < 604 ? () => _go(page + 1) : null,
-              icon: const Icon(Icons.chevron_left), label: const Text('التالية'))),
-          ])),
-      ]),
+          IconButton(
+            tooltip: 'فهرس السور',
+            onPressed: _pickSurah,
+            icon: const Icon(Icons.list_alt),
+          ),
+          IconButton(
+            tooltip: 'الانتقال إلى صفحة',
+            onPressed: _pickPage,
+            icon: const Icon(Icons.find_in_page),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: PdfViewer.uri(
+              mushafUri,
+              key: const ValueKey('standard1-original-pdf'),
+              controller: controller,
+              initialPageNumber: page,
+              preferRangeAccess: true,
+              params: PdfViewerParams(
+                paging: const PdfPaging(),
+                backgroundColor: const Color(0xFFEDE5D3),
+                onPageChanged: (nextPage) {
+                  if (nextPage != null) _savePage(nextPage);
+                },
+                onDocumentLoadFinished: (documentRef, success) {
+                  if (!mounted) return;
+                  setState(() {
+                    loading = false;
+                    failed = !success;
+                  });
+                },
+              ),
+            ),
+          ),
+          if (loading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 5),
+              child: LinearProgressIndicator(minHeight: 2, color: gold),
+            ),
+          if (failed)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                'تعذر فتح ملف المصحف. تحقق من اتصال الإنترنت ثم أعد المحاولة.',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          Container(
+            color: Theme.of(context).cardColor,
+            padding: const EdgeInsets.fromLTRB(10, 7, 10, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: page > 1 ? () => _goToPage(page - 1) : null,
+                    icon: const Icon(Icons.chevron_right),
+                    label: const Text('السابقة'),
+                  ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: page < 604 ? () => _goToPage(page + 1) : null,
+                    icon: const Icon(Icons.chevron_left),
+                    label: const Text('التالية'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
-  Widget _fallbackPage(int number, List sections) => Container(
-    color: const Color(0xFFFFFCF3), padding: const EdgeInsets.all(12),
-    child: SingleChildScrollView(child: Column(children: [
-      for (final section in sections) ...[
-        if ((section['start'] as int) == 1) ...[
-          Container(width: double.infinity, margin: const EdgeInsets.only(bottom: 7), padding: const EdgeInsets.symmetric(vertical: 7),
-            decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: green, width: 2)), color: const Color(0xFFF1F5EC)),
-            child: Text('سُورَةُ ' + quran.getSurahNameArabic(section['surah'] as int), textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 19, color: green, fontWeight: FontWeight.bold))),
-          if ((section['surah'] as int) != 1 && (section['surah'] as int) != 9)
-            Padding(padding: const EdgeInsets.only(bottom: 7), child: Text(quran.basmala,
-              textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: green))),
-        ],
-        Text(List.generate((section['end'] as int) - (section['start'] as int) + 1,
-          (i) => quran.getVerse(section['surah'] as int, (section['start'] as int) + i, verseEndSymbol: true)).join(' '),
-          textAlign: TextAlign.justify, textDirection: TextDirection.rtl,
-          style: const TextStyle(fontSize: 20, height: 2.05, color: Color(0xFF25251F))),
-      ],
-      const SizedBox(height: 8),
-      Text('صفحة ' + number.toString(), style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
-    ])));
 }
 
 class TasbeehPage extends StatefulWidget{const TasbeehPage({super.key});@override State<TasbeehPage> createState()=>_TasbeehPageState();}
