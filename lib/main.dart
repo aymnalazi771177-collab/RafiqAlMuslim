@@ -11,6 +11,7 @@ const green=Color(0xFF073F35), darkGreen=Color(0xFF052F28), gold=Color(0xFFD5B16
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await pdfrxFlutterInitialize();
   await AppPrefs.instance.load();
   runApp(const RafiqApp());
 }
@@ -145,10 +146,6 @@ class _QuranReaderState extends State<QuranReader> {
   bool loading = true;
   final PdfViewerController controller = PdfViewerController();
 
-  static final Uri mushafUri = Uri.parse(
-    'https://www.pdfquran.com/download/standard1/standard1-quran.pdf',
-  );
-
   @override
   void initState() {
     super.initState();
@@ -275,12 +272,11 @@ class _QuranReaderState extends State<QuranReader> {
       body: Column(
         children: [
           Expanded(
-            child: PdfViewer.uri(
-              mushafUri,
-              key: const ValueKey('standard1-original-pdf'),
+            child: PdfViewer.asset(
+              'assets/Holy-Quran-Mushaf.pdf',
+              key: const ValueKey('local-original-mushaf-pdf'),
               controller: controller,
               initialPageNumber: page,
-              preferRangeAccess: true,
               params: PdfViewerParams(
                 paging: const PdfPaging(),
                 backgroundColor: const Color(0xFFEDE5D3),
@@ -306,7 +302,7 @@ class _QuranReaderState extends State<QuranReader> {
             Padding(
               padding: const EdgeInsets.all(8),
               child: Text(
-                'تعذر فتح ملف المصحف. تحقق من اتصال الإنترنت ثم أعد المحاولة.',
+                'تعذر فتح ملف المصحف المضمّن في التطبيق.',
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
                 textAlign: TextAlign.center,
               ),
