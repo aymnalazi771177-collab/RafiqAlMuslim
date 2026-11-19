@@ -498,13 +498,6 @@ class QuranReaderPage extends StatelessWidget {
   }
 }
 
-// المسبحة الإلكترونية=page);
-        },
-      ),
-    );
-  }
-}
-
 // المسبحة الإلكترونية
 
 class TasbeehPage extends StatefulWidget {
