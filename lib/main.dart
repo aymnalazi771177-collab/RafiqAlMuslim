@@ -296,7 +296,16 @@ class PageHeader extends StatelessWidget {
             style: const TextStyle(
               color: gold,
               fontSize: 24,
-              fontWeight: FontWeight.bold// القرآن الكريم
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// القرآن الكريم
 
 class QuranPage extends StatefulWidget {
   const QuranPage({super.key});
