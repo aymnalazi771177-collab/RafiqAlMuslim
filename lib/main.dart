@@ -304,6 +304,10 @@ class _QuranReaderState extends State<QuranReader> {
                     loading = false;
                     failed = !success;
                   });
+                  if (success && controller.isReady) {
+                    controller.goToPage(pageNumber: widget.initialPage);
+                    _savePage(widget.initialPage);
+                  }
                 },
               ),
             ),
