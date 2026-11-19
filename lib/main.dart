@@ -566,107 +566,47 @@ class QuranReaderPage extends StatelessWidget {
 
 class TasbeehPage extends StatefulWidget {
   const TasbeehPage({super.key});
-
   @override
   State<TasbeehPage> createState() => _TasbeehPageState();
 }
-
 class _TasbeehPageState extends State<TasbeehPage> {
   int count = 0;
   String zekr = 'سبحان الله وبحمده';
-
-  final List<String> choices = [
-    'سبحان الله',
-    'الحمد لله',
-    'الله أكبر',
-    'لا إله إلا الله',
-    'سبحان الله وبحمده',
-    'أستغفر الله',
-  ];
-
+  bool ready = false;
+  final List<String> choices = const ['سبحان الله','الحمد لله','الله أكبر','لا إله إلا الله','سبحان الله وبحمده','أستغفر الله','لا حول ولا قوة إلا بالله','اللهم صل وسلم على نبينا محمد'];
+  @override
+  void initState() { super.initState(); _load(); }
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() { count = prefs.getInt('tasbeeh_count') ?? 0; zekr = prefs.getString('tasbeeh_zekr') ?? zekr; if (!choices.contains(zekr)) zekr = choices.first; ready = true; });
+  }
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('tasbeeh_count', count);
+    await prefs.setString('tasbeeh_zekr', zekr);
+  }
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          const PageHeader(
-            title: 'المسبحة الإلكترونية',
-            icon: Icons.radio_button_checked,
-          ),
-          const Spacer(),
-          const Text(
-            'الذكر الحالي',
-            style: TextStyle(color: Colors.black54, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          DropdownButton<String>(
-            value: zekr,
-            items: choices.map((value) {
-              return DropdownMenuItem(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  zekr = value;
-                  count = 0;
-                });
-              }
-            },
-          ),
-          const SizedBox(height: 25),
-          Container(
-            width: 205,
-            height: 205,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: green,
-              border: Border.all(color: gold, width: 6),
-              boxShadow: [
-                BoxShadow(
-                  color: green.withOpacity(0.16),
-                  blurRadius: 20,
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                '$count',
-                style: const TextStyle(
-                  color: gold,
-                  fontSize: 65,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 55,
-                vertical: 17,
-              ),
-            ),
-            onPressed: () => setState(() => count++),
-            child: const Text('تسبيح'),
-          ),
-          TextButton(
-            onPressed: () => setState(() => count = 0),
-            child: const Text(
-              'إعادة العداد',
-              style: TextStyle(color: green),
-            ),
-          ),
-          const Spacer(),
-        ],
-      ),
-    );
+    return SafeArea(child: Column(children: [
+      const PageHeader(title: 'المسبحة الإلكترونية', icon: Icons.radio_button_checked),
+      const Spacer(),
+      const Text('الذكر الحالي', style: TextStyle(color: Colors.black54, fontSize: 16)),
+      const SizedBox(height: 8),
+      DropdownButton<String>(value: zekr, items: choices.map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+        onChanged: (v) { if (v == null) return; setState(() { zekr = v; count = 0; }); _save(); }),
+      const SizedBox(height: 22),
+      Container(width: 205, height: 205, decoration: BoxDecoration(shape: BoxShape.circle, color: green, border: Border.all(color: gold, width: 6),
+        boxShadow: [BoxShadow(color: green.withOpacity(0.16), blurRadius: 20, spreadRadius: 4)]),
+        child: Center(child: ready ? Text('$count', style: const TextStyle(color: gold, fontSize: 65, fontWeight: FontWeight.bold)) : const CircularProgressIndicator(color: gold))),
+      const SizedBox(height: 18),
+      Text(zekr, textAlign: TextAlign.center, style: const TextStyle(color: green, fontSize: 18, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 24),
+      ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 55, vertical: 17)),
+        onPressed: ready ? () { setState(() => count++); _save(); } : null, child: const Text('تسبيح')),
+      TextButton(onPressed: ready ? () { setState(() => count = 0); _save(); } : null, child: const Text('إعادة العداد', style: TextStyle(color: green))),
+      const Spacer(),
+    ]));
   }
 }
 
@@ -682,6 +622,24 @@ class AzkarPage extends StatefulWidget {
 class _AzkarPageState extends State<AzkarPage> {
   String selected = 'أذكار الصباح';
   final Map<String, int> counters = {};
+  @override
+  void initState() { super.initState(); _loadCounters(); }
+
+  Future<void> _loadCounters() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('azkar_counters');
+    if (raw == null || !mounted) return;
+    try {
+      final saved = jsonDecode(raw) as Map<String, dynamic>;
+      setState(() { for (final entry in saved.entries) { counters[entry.key] = (entry.value as num).toInt(); } });
+    } catch (_) {}
+  }
+
+  Future<void> _saveCounters() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('azkar_counters', jsonEncode(counters));
+  }
+
 
   final Map<String, List<Map<String, dynamic>>> azkar = {
     'أذكار الصباح': [
@@ -719,6 +677,12 @@ class _AzkarPageState extends State<AzkarPage> {
         'text': 'اللهم إني أسألك العفو والعافية في الدنيا والآخرة.',
         'times': 1,
       },
+    ],
+    'أذكار عامة': [
+      {'text': 'لا إله إلا الله وحده لا شريك له، له الملك وله الحمد وهو على كل شيء قدير.', 'times': 10},
+      {'text': 'سبحان الله وبحمده، سبحان الله العظيم.', 'times': 100},
+      {'text': 'أستغفر الله وأتوب إليه.', 'times': 100},
+      {'text': 'اللهم صل وسلم على نبينا محمد.', 'times': 10},
     ],
     'بعد الصلاة': [
       {'text': 'أستغفر الله.', 'times': 3},
@@ -807,6 +771,7 @@ class _AzkarPageState extends State<AzkarPage> {
                               : () {
                                   setState(() {
                                     counters[key] = count + 1;
+                                    _saveCounters();
                                   });
                                 },
                           child: const Text('اضغط للتسبيح'),
@@ -814,6 +779,7 @@ class _AzkarPageState extends State<AzkarPage> {
                         TextButton(
                           onPressed: () {
                             setState(() => counters[key] = 0);
+                            _saveCounters();
                           },
                           child: const Text(
                             'إعادة العداد',
