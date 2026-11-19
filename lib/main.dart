@@ -368,7 +368,7 @@ class _QuranPageState extends State<QuranPage> {
                         leading: CircleAvatar(
                           backgroundColor: green,
                           child: Text(
-                            '\${index + 1}',
+                            '${index + 1}',
                             style: const TextStyle(color: gold, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -376,7 +376,7 @@ class _QuranPageState extends State<QuranPage> {
                           'سورة $name',
                           style: const TextStyle(color: green, fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text('$count آية  •  \${surah['loc'] ?? ''}'),
+                        subtitle: Text('$count آية  •  ${surah['loc'] ?? ''}'),
                         trailing: const Icon(Icons.menu_book, color: gold),
                         onTap: () {
                           Navigator.of(context).push(
@@ -425,7 +425,7 @@ class QuranReaderPage extends StatelessWidget {
                 Text(name, style: const TextStyle(color: gold, fontSize: 25, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 7),
                 Text(
-                  '\${surah['loc'] ?? ''}  •  \${ayahs.where((a) => (a['number'] as int) > 0).length} آية',
+                  '${surah['loc'] ?? ''}  •  ${ayahs.where((a) => (a['number'] as int) > 0).length} آية',
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
