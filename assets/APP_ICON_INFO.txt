@@ -1,0 +1,1 @@
+Launcher icon artwork for Rafiq Al Muslim is stored in app_icon.jpg and applied by the Android APK build workflow to all launcher density sizes.
