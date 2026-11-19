@@ -318,11 +318,34 @@ class QuranPage extends StatefulWidget {
 
 class _QuranPageState extends State<QuranPage> {
   late final Future<List<dynamic>> _surahsFuture;
+  String? _lastSurahName;
+  int? _lastSurahNumber;
 
   @override
   void initState() {
     super.initState();
     _surahsFuture = _loadSurahs();
+    _loadLastRead();
+  }
+
+  Future<void> _loadLastRead() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _lastSurahName = prefs.getString('last_surah_name');
+      _lastSurahNumber = prefs.getInt('last_surah_number');
+    });
+  }
+
+  Future<void> _saveLastRead(String name, int number) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_surah_name', name);
+    await prefs.setInt('last_surah_number', number);
+    if (!mounted) return;
+    setState(() {
+      _lastSurahName = name;
+      _lastSurahNumber = number;
+    });
   }
 
   Future<List<dynamic>> _loadSurahs() async {
@@ -338,12 +361,34 @@ class _QuranPageState extends State<QuranPage> {
         children: [
           const PageHeader(title: 'القرآن الكريم', icon: Icons.menu_book),
           const Padding(
-            padding: EdgeInsets.fromLTRB(16, 10, 16, 14),
+            padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
             child: Text(
               'اختر السورة لقراءة آياتها بالترتيب',
               style: TextStyle(color: green, fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
+          if (_lastSurahName != null && _lastSurahNumber != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              child: Card(
+                color: const Color(0xFFEDE2CE),
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: green),
+                  title: const Text('متابعة آخر قراءة', style: TextStyle(color: green, fontWeight: FontWeight.bold)),
+                  subtitle: Text('سورة $_lastSurahName'),
+                  trailing: const Icon(Icons.arrow_forward_ios, color: green, size: 16),
+                  onTap: () async {
+                    final data = await _surahsFuture;
+                    final index = _lastSurahNumber! - 1;
+                    if (index < 0 || index >= data.length || !context.mounted) return;
+                    final saved = Map<String, dynamic>.from(data[index] as Map);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => QuranReaderPage(surah: saved, surahNumber: _lastSurahNumber!, startPage: 1)),
+                    );
+                  },
+                ),
+              ),
+            ),
           Expanded(
             child: FutureBuilder<List<dynamic>>(
               future: _surahsFuture,
@@ -390,6 +435,7 @@ class _QuranPageState extends State<QuranPage> {
                         subtitle: Text('$count آية  •  ${surah['loc'] ?? ''}'),
                         trailing: const Icon(Icons.menu_book, color: gold),
                         onTap: () {
+                          _saveLastRead(name, index + 1);
                           Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => QuranReaderPage(surah: surah, surahNumber: index + 1, startPage: 1)),
                           );
@@ -840,7 +886,7 @@ class StoriesPage extends StatelessWidget {
         itemBuilder: (context, index) {
           final story = stories[index];
           return Card(color: Colors.white, child: ListTile(
-            leading: CircleAvatar(backgroundColor: green, child: Text('\${index + 1}', style: const TextStyle(color: gold))),
+            leading: CircleAvatar(backgroundColor: green, child: Text('${index + 1}', style: const TextStyle(color: gold))),
             title: Text(story['name']!, style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
             subtitle: Text(story['ref']!, maxLines: 1, overflow: TextOverflow.ellipsis),
             trailing: const Icon(Icons.arrow_forward_ios, color: gold, size: 16),
@@ -907,7 +953,7 @@ class _PrayerPageState extends State<PrayerPage> {
     final local = value.toLocal();
     final h = local.hour % 12 == 0 ? 12 : local.hour % 12;
     final minute = local.minute.toString().padLeft(2, '0');
-    return '$h:$minute \${local.hour >= 12 ? 'م' : 'ص'}';
+    return '$h:$minute ${local.hour >= 12 ? 'م' : 'ص'}';
   }
   @override
   Widget build(BuildContext context) {
@@ -934,7 +980,7 @@ class _PrayerPageState extends State<PrayerPage> {
           items: const ['أم القرى','رابطة العالم الإسلامي','المصري','كراتشي','الخليج'].map((n) => DropdownMenuItem(value: n, child: Text(n))).toList(),
           onChanged: (v) { if (v != null) setState(() => method = v); })),
       ])),
-      Padding(padding: const EdgeInsets.all(12), child: Text('مواقيت اليوم في $city • \${DateTime.now().day}/\${DateTime.now().month}/\${DateTime.now().year}', style: const TextStyle(color: green, fontWeight: FontWeight.bold))),
+      Padding(padding: const EdgeInsets.all(12), child: Text('مواقيت اليوم في $city • ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}', style: const TextStyle(color: green, fontWeight: FontWeight.bold))),
       Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(15, 0, 15, 15), children: entries.map((e) => Card(
         color: Colors.white, child: ListTile(
           leading: const Icon(Icons.mosque, color: gold),
@@ -991,7 +1037,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Card(color: Colors.white, child: SwitchListTile(
           secondary: const Icon(Icons.notifications_outlined, color: gold),
           title: const Text('التنبيهات'),
-          subtitle: const Text('حفظ تفضيل التنبيهات داخل التطبيق'),
+          subtitle: const Text('تفضيل المستخدم فقط؛ لا ترسل تنبيهات في هذه النسخة'),
           value: notifications, activeColor: green,
           onChanged: ready ? (value) {
             setState(() => notifications = value);
@@ -1001,7 +1047,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Card(color: Colors.white, child: SwitchListTile(
           secondary: const Icon(Icons.vibration, color: gold),
           title: const Text('الاهتزاز'),
-          subtitle: const Text('حفظ تفضيل الاهتزاز داخل التطبيق'),
+          subtitle: const Text('تفضيل محفوظ؛ لا يتم تشغيل الاهتزاز في هذه النسخة'),
           value: vibration, activeColor: green,
           onChanged: ready ? (value) {
             setState(() => vibration = value);
