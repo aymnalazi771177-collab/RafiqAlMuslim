@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:pdfx/pdfx.dart';
 
 const Color green = Color(0xFF073F35);
 const Color darkGreen = Color(0xFF052F28);
@@ -306,31 +307,31 @@ class PageHeader extends StatelessWidget {
 
 class QuranPage extends StatelessWidget {
   const QuranPage({super.key});
-
   static const surahs = [
-    'الفاتحة', 'البقرة', 'آل عمران', 'النساء', 'المائدة',
-    'الأنعام', 'الأعراف', 'الأنفال', 'التوبة', 'يونس',
-    'هود', 'يوسف', 'الرعد', 'إبراهيم', 'الحجر',
-    'النحل', 'الإسراء', 'الكهف', 'مريم', 'طه',
-    'الأنبياء', 'الحج', 'المؤمنون', 'النور', 'الفرقان',
-    'الشعراء', 'النمل', 'القصص', 'العنكبوت', 'الروم',
-    'لقمان', 'السجدة', 'الأحزاب', 'سبأ', 'فاطر',
-    'يس', 'الصافات', 'ص', 'الزمر', 'غافر',
-    'فصلت', 'الشورى', 'الزخرف', 'الدخان', 'الجاثية',
-    'الأحقاف', 'محمد', 'الفتح', 'الحجرات', 'ق',
-    'الذاريات', 'الطور', 'النجم', 'القمر', 'الرحمن',
-    'الواقعة', 'الحديد', 'المجادلة', 'الحشر', 'الممتحنة',
-    'الصف', 'الجمعة', 'المنافقون', 'التغابن', 'الطلاق',
-    'التحريم', 'الملك', 'القلم', 'الحاقة', 'المعارج',
-    'نوح', 'الجن', 'المزمل', 'المدثر', 'القيامة',
-    'الإنسان', 'المرسلات', 'النبأ', 'النازعات', 'عبس',
-    'التكوير', 'الانفطار', 'المطففين', 'الانشقاق', 'البروج',
-    'الطارق', 'الأعلى', 'الغاشية', 'الفجر', 'البلد',
-    'الشمس', 'الليل', 'الضحى', 'الشرح', 'التين',
-    'العلق', 'القدر', 'البينة', 'الزلزلة', 'العاديات',
-    'القارعة', 'التكاثر', 'العصر', 'الهمزة', 'الفيل',
-    'قريش', 'الماعون', 'الكوثر', 'الكافرون', 'النصر',
-    'المسد', 'الإخلاص', 'الفلق', 'الناس',
+    'الفاتحة','البقرة','آل عمران','النساء','المائدة','الأنعام','الأعراف','الأنفال','التوبة','يونس',
+    'هود','يوسف','الرعد','إبراهيم','الحجر','النحل','الإسراء','الكهف','مريم','طه',
+    'الأنبياء','الحج','المؤمنون','النور','الفرقان','الشعراء','النمل','القصص','العنكبوت','الروم',
+    'لقمان','السجدة','الأحزاب','سبأ','فاطر','يس','الصافات','ص','الزمر','غافر',
+    'فصلت','الشورى','الزخرف','الدخان','الجاثية','الأحقاف','محمد','الفتح','الحجرات','ق',
+    'الذاريات','الطور','النجم','القمر','الرحمن','الواقعة','الحديد','المجادلة','الحشر','الممتحنة',
+    'الصف','الجمعة','المنافقون','التغابن','الطلاق','التحريم','الملك','القلم','الحاقة','المعارج',
+    'نوح','الجن','المزمل','المدثر','القيامة','الإنسان','المرسلات','النبأ','النازعات','عبس',
+    'التكوير','الانفطار','المطففين','الانشقاق','البروج','الطارق','الأعلى','الغاشية','الفجر','البلد',
+    'الشمس','الليل','الضحى','الشرح','التين','العلق','القدر','البينة','الزلزلة','العاديات',
+    'القارعة','التكاثر','العصر','الهمزة','الفيل','قريش','الماعون','الكوثر','الكافرون','النصر',
+    'المسد','الإخلاص','الفلق','الناس',
+  ];
+
+  // بدايات السور حسب أرقام صفحات ملف PDF نفسه (ترقيم الصفحات يبدأ من 1).
+  static const surahPdfPages = [
+    1,2,45,69,95,115,136,160,169,187,199,212,225,231,237,
+    242,255,266,277,284,294,302,311,319,329,335,345,354,364,
+    371,377,381,383,393,399,404,410,417,422,431,439,445,451,
+    457,460,464,468,472,477,479,482,485,487,490,493,496,499,
+    504,507,510,513,515,516,518,520,522,524,526,529,531,533,
+    534,537,538,540,542,544,545,547,548,550,551,552,553,554,
+    555,556,556,557,559,559,560,561,561,562,562,563,563,564,
+    564,565,565,566,566,566,567,567,567,568,568,568,569,569,569,
   ];
 
   @override
@@ -338,66 +339,33 @@ class QuranPage extends StatelessWidget {
     return SafeArea(
       child: Column(
         children: [
-          const PageHeader(
-            title: 'القرآن الكريم',
-            icon: Icons.menu_book,
-          ),
+          const PageHeader(title:'القرآن الكريم',icon:Icons.menu_book),
           const Padding(
             padding: EdgeInsets.all(15),
-            child: Text(
-              'اختر السورة من فهرس القرآن الكريم',
-              style: TextStyle(
-                color: green,
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: Text('اختر السورة لفتحها من بدايتها في المصحف',
+              style:TextStyle(color:green,fontSize:17,fontWeight:FontWeight.bold)),
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              itemCount: surahs.length,
-              itemBuilder: (context, index) {
+              padding: const EdgeInsets.symmetric(horizontal:14),
+              itemCount:surahs.length,
+              itemBuilder:(context,index) {
+                final pdfPage=surahPdfPages[index];
                 return Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: green,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(color: gold),
-                      ),
-                    ),
-                    title: Text(
-                      'سورة ${surahs[index]}',
-                      style: const TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: gold,
-                      size: 17,
-                    ),
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('سورة ${surahs[index]}'),
-                          content: const Text(
-                            'تم تجهيز فهرس السور. '
-                            'سيتم ربط نص المصحف المعتمد '
-                            'في المرحلة التالية.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('حسناً'),
-                            ),
-                          ],
-                        ),
-                      );
+                  color:Colors.white,
+                  child:ListTile(
+                    leading:CircleAvatar(
+                      backgroundColor:green,
+                      child:Text('\${index+1}',style:const TextStyle(color:gold))),
+                    title:Text('سورة \${surahs[index]}',
+                      style:const TextStyle(color:green,fontWeight:FontWeight.bold)),
+                    subtitle:Text('صفحة $pdfPage في المصحف',
+                      style:const TextStyle(color:Colors.black54)),
+                    trailing:const Icon(Icons.arrow_forward_ios,color:gold,size:17),
+                    onTap:() {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder:(_)=>QuranReaderPage(
+                          surahName:surahs[index],initialPdfPage:pdfPage)));
                     },
                   ),
                 );
@@ -405,6 +373,59 @@ class QuranPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class QuranReaderPage extends StatefulWidget {
+  final String surahName;
+  final int initialPdfPage;
+  const QuranReaderPage({super.key,required this.surahName,required this.initialPdfPage});
+  @override
+  State<QuranReaderPage> createState()=>_QuranReaderPageState();
+}
+
+class _QuranReaderPageState extends State<QuranReaderPage> {
+  late final PdfControllerPinch _pdfController;
+  int _currentPage=1;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage=widget.initialPdfPage;
+    _pdfController=PdfControllerPinch(
+      document:PdfDocument.openAsset('assets/Holy-Quran-Mushaf.pdf'),
+      initialPage:widget.initialPdfPage,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pdfController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor:cream,
+      appBar:AppBar(
+        backgroundColor:green,
+        foregroundColor:Colors.white,
+        title:Text('سورة \${widget.surahName}'),
+        centerTitle:true,
+        actions:[
+          Center(child:Padding(
+            padding:const EdgeInsetsDirectional.only(end:14),
+            child:Text('$_currentPage / 569',style:const TextStyle(fontSize:13)))),
+        ],
+      ),
+      body:PdfViewPinch(
+        controller:_pdfController,
+        onPageChanged:(page) {
+          if(mounted) setState(()=>_currentPage=page);
+        },
       ),
     );
   }
