@@ -70,49 +70,178 @@ class HomePage extends StatelessWidget{
     GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),itemCount:items.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:2,crossAxisSpacing:12,mainAxisSpacing:12,childAspectRatio:1.12),itemBuilder:(c,i){
       final x=items[i];return InkWell(borderRadius:BorderRadius.circular(18),onTap:(){feedback();open(x.$3);},child:Container(decoration:BoxDecoration(color:Theme.of(c).cardColor,borderRadius:BorderRadius.circular(18),border:Border.all(color:gold.withOpacity(.6))),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(x.$2,color:gold,size:38),const SizedBox(height:10),Text(x.$1,style:TextStyle(color:Theme.of(c).colorScheme.primary,fontWeight:FontWeight.bold))])));
     }),
-    Card(child:ListTile(leading:const Icon(Icons.bookmark,color:gold),title:const Text('متابعة القراءة'),subtitle:const Text('العودة إلى آخر موضع حفظته'),onTap:()async{final p=await SharedPreferences.getInstance();final s=p.getInt('last_surah')??1,a=p.getInt('last_ayah')??1;if(!context.mounted)return;Navigator.push(context,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(surah:s,initialAyah:a))));}))
+    Card(child:ListTile(leading:const Icon(Icons.bookmark,color:gold),title:const Text('متابعة القراءة'),subtitle:const Text('العودة إلى آخر موضع حفظته'),onTap:()async{final p=await SharedPreferences.getInstance();final page=p.getInt('last_page')??1;if(!context.mounted)return;Navigator.push(context,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(initialPage:page))));}))
   ]));
 }
 
 class Header extends StatelessWidget{final String title;final IconData icon;const Header(this.title,this.icon,{super.key});@override Widget build(BuildContext c)=>Container(width:double.infinity,padding:const EdgeInsets.symmetric(vertical:20),decoration:const BoxDecoration(color:green,borderRadius:BorderRadius.vertical(bottom:Radius.circular(24))),child:Column(children:[Icon(icon,color:gold,size:36),const SizedBox(height:8),Text(title,style:const TextStyle(color:gold,fontSize:23,fontWeight:FontWeight.bold))]));}
 
-class QuranPage extends StatefulWidget{const QuranPage({super.key});@override State<QuranPage> createState()=>_QuranPageState();}
-class _QuranPageState extends State<QuranPage>{
-  final search=TextEditingController();@override void dispose(){search.dispose();super.dispose();}
-  @override Widget build(BuildContext c){
-    final orderedSurahs = List<int>.generate(114, (i) => i + 1)
-      ..sort((a, b) => a.compareTo(b));
-    final nums = orderedSurahs
-        .where((n) => search.text.isEmpty ||
-            quran.getSurahNameArabic(n).contains(search.text) ||
-            n.toString() == search.text)
-        .toList();
-    return SafeArea(child:Column(children:[const Header('القرآن الكريم',Icons.menu_book),Padding(padding:const EdgeInsets.all(13),child:TextField(controller:search,onChanged:(_)=>setState((){}),decoration:InputDecoration(prefixIcon:const Icon(Icons.search),hintText:'ابحث عن سورة أو رقمها',filled:true,fillColor:Theme.of(c).cardColor,border:OutlineInputBorder(borderRadius:BorderRadius.circular(14),borderSide:BorderSide.none)))),Expanded(child:ListView.builder(padding:const EdgeInsets.symmetric(horizontal:12),itemCount:nums.length,itemBuilder:(c,i){
-      final n=nums[i];return Card(child:ListTile(leading:CircleAvatar(backgroundColor:green,child:Text('$n',style:const TextStyle(color:gold))),title:Text('سورة '+quran.getSurahNameArabic(n),style:const TextStyle(fontWeight:FontWeight.bold)),subtitle:Text(quran.getVerseCount(n).toString()+' آية • '+(quran.getPlaceOfRevelation(n)=='Makkah'?'مكية':'مدنية')),trailing:const Icon(Icons.chevron_left,color:gold),onTap:()=>Navigator.push(c,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(surah:n))))));
-    }))]));
+class QuranPage extends StatefulWidget {
+  const QuranPage({super.key});
+  @override State<QuranPage> createState() => _QuranPageState();
+}
+class _QuranPageState extends State<QuranPage> {
+  final search = TextEditingController();
+  @override void dispose() { search.dispose(); super.dispose(); }
+  @override Widget build(BuildContext c) {
+    final nums = List<int>.generate(114, (i) => i + 1).where((n) =>
+      search.text.isEmpty || quran.getSurahNameArabic(n).contains(search.text) || n.toString() == search.text).toList();
+    return SafeArea(child: Column(children: [
+      const Header('المصحف الشريف', Icons.menu_book),
+      Padding(padding: const EdgeInsets.all(13), child: TextField(
+        controller: search, onChanged: (_) => setState(() {}),
+        decoration: InputDecoration(prefixIcon: const Icon(Icons.search), hintText: 'ابحث عن سورة أو رقمها',
+          filled: true, fillColor: Theme.of(c).cardColor,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none)))),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 13), child: Row(children: [
+        Expanded(child: OutlinedButton.icon(onPressed: () => _open(c, 1),
+          icon: const Icon(Icons.auto_stories), label: const Text('فتح المصحف'))),
+        const SizedBox(width: 8),
+        Expanded(child: OutlinedButton.icon(onPressed: () => _pickPage(c),
+          icon: const Icon(Icons.find_in_page), label: const Text('رقم الصفحة'))),
+      ])),
+      Expanded(child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 12), itemCount: nums.length,
+        itemBuilder: (c, i) {
+          final n = nums[i], firstPage = quran.getPageNumber(n, 1);
+          return Card(child: ListTile(
+            leading: CircleAvatar(backgroundColor: green, child: Text(n.toString(), style: const TextStyle(color: gold))),
+            title: Text('سورة ' + quran.getSurahNameArabic(n), style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(quran.getVerseCount(n).toString() + ' آية • صفحة ' + firstPage.toString()),
+            trailing: const Icon(Icons.chevron_left, color: gold), onTap: () => _open(c, firstPage)));
+        })),
+    ]));
+  }
+  void _open(BuildContext c, int page) => Navigator.push(c, MaterialPageRoute(
+    builder: (_) => Directionality(textDirection: TextDirection.rtl, child: QuranReader(initialPage: page))));
+  Future<void> _pickPage(BuildContext c) async {
+    final controller = TextEditingController();
+    final value = await showDialog<int>(context: c, builder: (d) => AlertDialog(
+      title: const Text('الانتقال إلى صفحة'),
+      content: TextField(controller: controller, keyboardType: TextInputType.number,
+        decoration: const InputDecoration(hintText: 'من 1 إلى 604')),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(d), child: const Text('إلغاء')),
+        FilledButton(onPressed: () {
+          final n = int.tryParse(controller.text.trim());
+          if (n != null && n >= 1 && n <= 604) Navigator.pop(d, n);
+        }, child: const Text('انتقال')),
+      ]));
+    controller.dispose();
+    if (value != null && c.mounted) _open(c, value);
   }
 }
-class QuranReader extends StatefulWidget{final int surah,initialAyah;const QuranReader({super.key,required this.surah,this.initialAyah=1});@override State<QuranReader> createState()=>_QuranReaderState();}
-class _QuranReaderState extends State<QuranReader>{
-  double size=27;
-  @override Widget build(BuildContext c){
-    final name=quran.getSurahNameArabic(widget.surah),total=quran.getVerseCount(widget.surah);
-    return Scaffold(appBar:AppBar(title:Text('سورة '+name),actions:[IconButton(onPressed:()=>setState(()=>size=(size-2).clamp(19,38)),icon:const Icon(Icons.text_decrease)),IconButton(onPressed:()=>setState(()=>size=(size+2).clamp(19,38)),icon:const Icon(Icons.text_increase))]),body:ListView(padding:const EdgeInsets.all(17),children:[
-      Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:green,borderRadius:BorderRadius.circular(17),border:Border.all(color:gold)),child:Column(children:[Text(name,style:const TextStyle(color:gold,fontSize:25,fontWeight:FontWeight.bold)),Text(total.toString()+' آية',style:const TextStyle(color:Colors.white70))])),
-      if(widget.surah!=1&&widget.surah!=9)Padding(padding:const EdgeInsets.symmetric(vertical:18),child:Text(quran.basmala,textAlign:TextAlign.center,style:TextStyle(fontSize:size,color:Theme.of(c).colorScheme.primary))),
-      ...List.generate(total,(i){final a=i+1;return InkWell(onLongPress:()async{final p=await SharedPreferences.getInstance();await p.setInt('last_surah',widget.surah);await p.setInt('last_ayah',a);if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(SnackBar(content:Text('تم حفظ موضع القراءة: الآية '+a.toString())));},child:Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Text(quran.getVerse(widget.surah,a,verseEndSymbol:true),textAlign:TextAlign.justify,style:TextStyle(fontSize:size,height:2,color:Theme.of(c).colorScheme.onSurface))));}),
-      const Text('اضغط مطولًا على الآية لحفظ موضع القراءة.',textAlign:TextAlign.center,style:TextStyle(color:Colors.grey)),
-      const SizedBox(height: 18),
-      Row(children: [
-        Expanded(child: OutlinedButton.icon(
-          onPressed: widget.surah > 1 ? () => Navigator.pushReplacement(c, MaterialPageRoute(builder: (_) => Directionality(textDirection: TextDirection.rtl, child: QuranReader(surah: widget.surah - 1)))) : null,
-          icon: const Icon(Icons.chevron_right), label: const Text('السورة السابقة'))),
-        const SizedBox(width: 10),
-        Expanded(child: OutlinedButton.icon(
-          onPressed: widget.surah < 114 ? () => Navigator.pushReplacement(c, MaterialPageRoute(builder: (_) => Directionality(textDirection: TextDirection.rtl, child: QuranReader(surah: widget.surah + 1)))) : null,
-          icon: const Icon(Icons.chevron_left), label: const Text('السورة التالية'))),
-      ])
-    ]));
+
+class QuranReader extends StatefulWidget {
+  final int initialPage;
+  const QuranReader({super.key, this.initialPage = 1});
+  @override State<QuranReader> createState() => _QuranReaderState();
+}
+class _QuranReaderState extends State<QuranReader> {
+  late int page;
+  @override void initState() { super.initState(); page = widget.initialPage.clamp(1, 604); _savePage(); }
+  Future<void> _savePage() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setInt('last_page', page);
+    final sections = quran.getPageData(page);
+    if (sections.isNotEmpty) {
+      await p.setInt('last_surah', sections.first['surah'] as int);
+      await p.setInt('last_ayah', sections.first['start'] as int);
+    }
+  }
+  void _go(int n) {
+    if (n < 1 || n > 604) return;
+    setState(() => page = n);
+    _savePage();
+  }
+  Future<void> _pickPage() async {
+    final controller = TextEditingController(text: page.toString());
+    final value = await showDialog<int>(context: context, builder: (d) => AlertDialog(
+      title: const Text('الانتقال إلى صفحة'),
+      content: TextField(controller: controller, keyboardType: TextInputType.number,
+        decoration: const InputDecoration(helperText: 'أدخل رقمًا من 1 إلى 604')),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(d), child: const Text('إلغاء')),
+        FilledButton(onPressed: () {
+          final n = int.tryParse(controller.text.trim());
+          if (n != null && n >= 1 && n <= 604) Navigator.pop(d, n);
+        }, child: const Text('انتقال')),
+      ]));
+    controller.dispose();
+    if (value != null) _go(value);
+  }
+  Future<void> _pickSurah() async {
+    final value = await showModalBottomSheet<int>(context: context, isScrollControlled: true,
+      builder: (d) => Directionality(textDirection: TextDirection.rtl, child: SafeArea(
+        child: SizedBox(height: MediaQuery.of(d).size.height * .78, child: Column(children: [
+          const Padding(padding: EdgeInsets.all(16), child: Text('فهرس السور', style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold))),
+          Expanded(child: ListView.builder(itemCount: 114, itemBuilder: (d, i) {
+            final n = i + 1;
+            return ListTile(leading: CircleAvatar(backgroundColor: green, child: Text(n.toString(), style: const TextStyle(color: gold))),
+              title: Text('سورة ' + quran.getSurahNameArabic(n)),
+              subtitle: Text(quran.getVerseCount(n).toString() + ' آية'),
+              onTap: () => Navigator.pop(d, quran.getPageNumber(n, 1)));
+          })),
+        ])))));
+    if (value != null) _go(value);
+  }
+  @override Widget build(BuildContext c) {
+    final sections = quran.getPageData(page);
+    final first = sections.first;
+    final juz = quran.getJuzNumber(first['surah'] as int, first['start'] as int);
+    final url = 'https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/' + page.toString() + '.png';
+    return Scaffold(
+      backgroundColor: const Color(0xFFEDE5D3),
+      appBar: AppBar(title: Text('المصحف الشريف • صفحة ' + page.toString()),
+        actions: [
+          IconButton(tooltip: 'فهرس السور', onPressed: _pickSurah, icon: const Icon(Icons.list_alt)),
+          IconButton(tooltip: 'رقم الصفحة', onPressed: _pickPage, icon: const Icon(Icons.find_in_page)),
+        ]),
+      body: Column(children: [
+        Padding(padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text('الجزء ' + juz.toString(), style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
+            Text('صفحة ' + page.toString() + ' من 604', style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
+          ])),
+        Expanded(child: Center(child: AspectRatio(aspectRatio: 0.69,
+          child: Container(margin: const EdgeInsets.fromLTRB(9, 3, 9, 8),
+            decoration: BoxDecoration(color: const Color(0xFFFFFCF3), border: Border.all(color: const Color(0xFFC49A45), width: 2),
+              boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 7, offset: Offset(0, 3))]),
+            child: ClipRect(child: InteractiveViewer(minScale: 1, maxScale: 3,
+              child: Image.network(url, fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(color: green)),
+                errorBuilder: (context, error, stack) => _fallbackPage(page, sections)))))))),
+        Container(color: Theme.of(c).cardColor, padding: const EdgeInsets.fromLTRB(10, 7, 10, 10),
+          child: Row(children: [
+            Expanded(child: OutlinedButton.icon(onPressed: page > 1 ? () => _go(page - 1) : null,
+              icon: const Icon(Icons.chevron_right), label: const Text('السابقة'))),
+            const SizedBox(width: 9),
+            Expanded(child: FilledButton.icon(onPressed: page < 604 ? () => _go(page + 1) : null,
+              icon: const Icon(Icons.chevron_left), label: const Text('التالية'))),
+          ])),
+      ]),
+    );
+  }
+  Widget _fallbackPage(int number, List sections) => Container(
+    color: const Color(0xFFFFFCF3), padding: const EdgeInsets.all(12),
+    child: SingleChildScrollView(child: Column(children: [
+      for (final section in sections) ...[
+        if ((section['start'] as int) == 1) ...[
+          Container(width: double.infinity, margin: const EdgeInsets.only(bottom: 7), padding: const EdgeInsets.symmetric(vertical: 7),
+            decoration: BoxDecoration(border: Border.symmetric(horizontal: BorderSide(color: green, width: 2)), color: const Color(0xFFF1F5EC)),
+            child: Text('سُورَةُ ' + quran.getSurahNameArabic(section['surah'] as int), textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 19, color: green, fontWeight: FontWeight.bold))),
+          if ((section['surah'] as int) != 1 && (section['surah'] as int) != 9)
+            Padding(padding: const EdgeInsets.only(bottom: 7), child: Text(quran.basmala,
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, color: green))),
+        ],
+        Text(List.generate((section['end'] as int) - (section['start'] as int) + 1,
+          (i) => quran.getVerse(section['surah'] as int, (section['start'] as int) + i, verseEndSymbol: true)).join(' '),
+          textAlign: TextAlign.justify, textDirection: TextDirection.rtl,
+          style: const TextStyle(fontSize: 20, height: 2.05, color: Color(0xFF25251F))),
+      ],
+      const SizedBox(height: 8),
+      Text('صفحة ' + number.toString(), style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
+    ])));
   }
 }
 
