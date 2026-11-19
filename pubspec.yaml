@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  pdfx: ^2.11.0
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +22,4 @@ flutter:
   assets:
     - assets/quran-uthmani.json
     - assets/QURAN_ATTRIBUTION.txt
+    - assets/Holy-Quran-Mushaf.pdf
