@@ -11,8 +11,11 @@ const green=Color(0xFF073F35), darkGreen=Color(0xFF052F28), gold=Color(0xFFD5B16
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await pdfrxFlutterInitialize();
-  await AppPrefs.instance.load();
+  try {
+    await AppPrefs.instance.load();
+  } catch (_) {
+    // Keep the app usable even if local preferences cannot be read.
+  }
   runApp(const RafiqApp());
 }
 
