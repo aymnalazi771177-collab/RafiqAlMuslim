@@ -242,7 +242,6 @@ class _QuranReaderState extends State<QuranReader> {
       const SizedBox(height: 8),
       Text('صفحة ' + number.toString(), style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
     ])));
-  }
 }
 
 class TasbeehPage extends StatefulWidget{const TasbeehPage({super.key});@override State<TasbeehPage> createState()=>_TasbeehPageState();}
