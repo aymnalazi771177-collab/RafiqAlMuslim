@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:adhan_dart/adhan_dart.dart';
 
 const Color green = Color(0xFF073F35);
 const Color darkGreen = Color(0xFF052F28);
@@ -910,76 +912,73 @@ class StoriesPage extends StatelessWidget {
 
 // مواقيت الصلاة
 
-class PrayerPage extends StatelessWidget {
+class PrayerPage extends StatefulWidget {
   const PrayerPage({super.key});
-
-  static const prayers = [
-    'الفجر',
-    'الشروق',
-    'الظهر',
-    'العصر',
-    'المغرب',
-    'العشاء',
-  ];
-
+  @override
+  State<PrayerPage> createState() => _PrayerPageState();
+}
+class _PrayerPageState extends State<PrayerPage> {
+  static const Map<String, Coordinates> cities = {
+    'عدن': Coordinates(12.7855, 45.0187),
+    'صنعاء': Coordinates(15.3694, 44.1910),
+    'تعز': Coordinates(13.5789, 44.0219),
+    'الحديدة': Coordinates(14.7978, 42.9545),
+    'إب': Coordinates(13.9667, 44.1833),
+    'المكلا': Coordinates(14.5425, 49.1242),
+  };
+  String city = 'عدن';
+  String method = 'أم القرى';
+  CalculationParameters _parameters() {
+    switch (method) {
+      case 'رابطة العالم الإسلامي': return CalculationMethodParameters.muslimWorldLeague();
+      case 'المصري': return CalculationMethodParameters.egyptian();
+      case 'كراتشي': return CalculationMethodParameters.karachi();
+      case 'الخليج': return CalculationMethodParameters.gulfRegion();
+      default: return CalculationMethodParameters.ummAlQura();
+    }
+  }
+  String _time(DateTime value) {
+    final local = value.toLocal();
+    final h = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$h:$minute \${local.hour >= 12 ? 'م' : 'ص'}';
+  }
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          const PageHeader(
-            title: 'مواقيت الصلاة',
-            icon: Icons.access_time,
-          ),
-          const SizedBox(height: 20),
-          const Icon(Icons.location_on, color: gold, size: 35),
-          const Text(
-            'مواقيت الصلاة حسب موقعك',
-            style: TextStyle(
-              color: green,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.all(15),
-            child: Text(
-              'سيتم تفعيل تحديد الموقع وحساب المواقيت '
-              'في مرحلة ربط خدمة الصلاة.',
-              textAlign: TextAlign.center,
-              style: TextStyle(height: 1.8),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(15),
-              children: prayers.map((name) {
-                return Card(
-                  color: Colors.white,
-                  child: ListTile(
-                    leading: const Icon(Icons.mosque, color: gold),
-                    title: Text(
-                      name,
-                      style: const TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    trailing: const Text(
-                      '--:--',
-                      style: TextStyle(
-                        color: green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
+    final times = PrayerTimes(coordinates: cities[city]!, date: DateTime.now(), calculationParameters: _parameters());
+    final entries = <MapEntry<String, DateTime>>[
+      MapEntry('الفجر', times.fajr), MapEntry('الشروق', times.sunrise),
+      MapEntry('الظهر', times.dhuhr), MapEntry('العصر', times.asr),
+      MapEntry('المغرب', times.maghrib), MapEntry('العشاء', times.isha),
+    ];
+    return SafeArea(child: Column(children: [
+      const PageHeader(title: 'مواقيت الصلاة', icon: Icons.access_time),
+      Padding(padding: const EdgeInsets.fromLTRB(16, 15, 16, 5), child: Row(children: [
+        const Icon(Icons.location_on, color: gold), const SizedBox(width: 8),
+        const Text('المدينة:', style: TextStyle(color: green, fontWeight: FontWeight.bold)),
+        const SizedBox(width: 10),
+        Expanded(child: DropdownButton<String>(isExpanded: true, value: city,
+          items: cities.keys.map((n) => DropdownMenuItem(value: n, child: Text(n))).toList(),
+          onChanged: (v) { if (v != null) setState(() => city = v); })),
+      ])),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
+        const Text('طريقة الحساب:', style: TextStyle(color: green, fontWeight: FontWeight.bold)),
+        const SizedBox(width: 10),
+        Expanded(child: DropdownButton<String>(isExpanded: true, value: method,
+          items: const ['أم القرى','رابطة العالم الإسلامي','المصري','كراتشي','الخليج'].map((n) => DropdownMenuItem(value: n, child: Text(n))).toList(),
+          onChanged: (v) { if (v != null) setState(() => method = v); })),
+      ])),
+      Padding(padding: const EdgeInsets.all(12), child: Text('مواقيت اليوم في $city • \${DateTime.now().day}/\${DateTime.now().month}/\${DateTime.now().year}', style: const TextStyle(color: green, fontWeight: FontWeight.bold))),
+      Expanded(child: ListView(padding: const EdgeInsets.fromLTRB(15, 0, 15, 15), children: entries.map((e) => Card(
+        color: Colors.white, child: ListTile(
+          leading: const Icon(Icons.mosque, color: gold),
+          title: Text(e.key, style: const TextStyle(color: green, fontWeight: FontWeight.bold)),
+          trailing: Text(_time(e.value), style: const TextStyle(color: green, fontWeight: FontWeight.bold, fontSize: 17)),
+        ),
+      )).toList())),
+      const Padding(padding: EdgeInsets.only(bottom: 8, left: 12, right: 12),
+        child: Text('الأوقات محسوبة محليًا دون إنترنت. قد تختلف دقائق يسيرة حسب التقويم الرسمي في منطقتك.', textAlign: TextAlign.center, style: TextStyle(color: Colors.black54, fontSize: 11))),
+    ]));
   }
 }
 
