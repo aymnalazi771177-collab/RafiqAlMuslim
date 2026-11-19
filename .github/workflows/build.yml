@@ -28,6 +28,38 @@ jobs:
           flutter create --platforms=android --project-name rafiq_al_muslim --org com.rafiqalmuslim /tmp/rafiq_android
           cp -R /tmp/rafiq_android/android ./android
 
+      - name: Apply Rafiq Al Muslim launcher icon
+        run: |
+          python3 -m pip install Pillow
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          source = Image.open("assets/app_icon.jpg").convert("RGB")
+          resources = Path("android/app/src/main/res")
+          sizes = {
+              "mipmap-mdpi": 48,
+              "mipmap-hdpi": 72,
+              "mipmap-xhdpi": 96,
+              "mipmap-xxhdpi": 144,
+              "mipmap-xxxhdpi": 192,
+          }
+          for folder, size in sizes.items():
+              target = resources / folder
+              target.mkdir(parents=True, exist_ok=True)
+              icon = source.resize((size, size), Image.Resampling.LANCZOS)
+              icon.save(target / "ic_launcher.png", optimize=True)
+              icon.save(target / "ic_launcher_round.png", optimize=True)
+
+          # Use the generated density-specific icons on all Android versions.
+          adaptive = resources / "mipmap-anydpi-v26"
+          if adaptive.exists():
+              for name in ("ic_launcher.xml", "ic_launcher_round.xml"):
+                  path = adaptive / name
+                  if path.exists():
+                      path.unlink()
+          PY
+
       - name: Add Android location permissions
         run: |
           python3 - <<'PY'
