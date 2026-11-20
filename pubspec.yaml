@@ -1,7 +1,7 @@
 name: rafiq_al_muslim
 description: تطبيق رفيق المسلم
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.2+4
 environment:
   sdk: '>=3.5.0 <4.0.0'
 dependencies:
