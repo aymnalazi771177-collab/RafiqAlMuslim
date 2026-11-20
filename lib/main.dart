@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:adhan_dart/adhan_dart.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,8 +33,8 @@ class AppPrefs extends ChangeNotifier {
     dark=p.getBool('dark_mode')??false;
     vibration=p.getBool('vibration')??true;
   }
-  Future<void> setDark(bool v) async { dark=v; final p=await SharedPreferences.getInstance(); await p.setBool('dark_mode',v); notifyListeners(); }
-  Future<void> setVibration(bool v) async { vibration=v; final p=await SharedPreferences.getInstance(); await p.setBool('vibration',v); notifyListeners(); }
+  Future<void> setDark(bool v) async { if(dark==v)return; dark=v; notifyListeners(); try { final p=await SharedPreferences.getInstance(); await p.setBool('dark_mode',v); } catch (_) {} }
+  Future<void> setVibration(bool v) async { vibration=v; notifyListeners(); try { final p=await SharedPreferences.getInstance(); await p.setBool('vibration',v); } catch (_) {} }
 }
 Future<void> feedback() async { if(AppPrefs.instance.vibration) await HapticFeedback.selectionClick(); }
 
@@ -580,11 +581,50 @@ class _PrayerPageState extends State<PrayerPage>{
   }
 }
 
-class SettingsPage extends StatelessWidget{const SettingsPage({super.key});@override Widget build(BuildContext c){final s=AppPrefs.instance;return SafeArea(child:Column(children:[const Header('الإعدادات',Icons.settings),Expanded(child:ListView(padding:const EdgeInsets.all(14),children:[
-  Card(child:SwitchListTile(secondary:const Icon(Icons.dark_mode,color:gold),title:const Text('الوضع الليلي'),value:s.dark,onChanged:s.setDark)),
-  Card(child:SwitchListTile(secondary:const Icon(Icons.vibration,color:gold),title:const Text('الاهتزاز'),subtitle:const Text('اهتزاز خفيف عند التسبيح'),value:s.vibration,onChanged:s.setVibration)),
-  Card(child:ListTile(leading:const Icon(Icons.bookmark_remove,color:gold),title:const Text('مسح موضع القراءة المحفوظ'),onTap:()async{final p=await SharedPreferences.getInstance();await p.remove('last_surah');await p.remove('last_ayah');if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(const SnackBar(content:Text('تم مسح موضع القراءة.')));})),
-  const Card(child:ListTile(leading:Icon(Icons.info_outline,color:gold),title:Text('عن التطبيق'),subtitle:Text('رفيق المسلم • رفيقك إلى الطمأنينة • الإصدار 1.0.1'))),
-  const Card(child:Padding(padding:EdgeInsets.all(16),child:Text('مواقيت الصلاة محسوبة على الجهاز وفق طريقة الحساب المختارة، وقد تحتاج إلى مطابقتها مع تقويم المسجد في منطقتك.',style:TextStyle(color:Colors.grey,height:1.7)))),
-  const Center(child:Text('نسأل الله أن ينفع بهذا العمل ويتقبله.',style:TextStyle(color:gold,fontWeight:FontWeight.bold)))
-]))]));}}
+class SettingsPage extends StatelessWidget{
+  const SettingsPage({super.key});
+  Future<void> contactDeveloper(BuildContext c)async{
+    final uri=Uri.parse('https://wa.me/967771177633?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%D9%83%D9%85%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B1%D9%81%D9%8A%D9%82%20%D8%A7%D9%84%D9%85%D8%B3%D9%84%D9%85.');
+    try{
+      final ok=await launchUrl(uri,mode:LaunchMode.externalApplication);
+      if(!ok&&c.mounted)ScaffoldMessenger.of(c).showSnackBar(const SnackBar(content:Text('تعذر فتح واتساب. تأكد من تثبيته أو جرّب لاحقًا.')));
+    }catch(_){
+      if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(const SnackBar(content:Text('تعذر فتح واتساب على هذا الجهاز.')));
+    }
+  }
+  @override Widget build(BuildContext c){
+    final s=AppPrefs.instance;
+    return SafeArea(child:Column(children:[
+      const Header('الإعدادات',Icons.settings),
+      Expanded(child:ListView(padding:const EdgeInsets.all(14),children:[
+        Card(child:SwitchListTile(
+          secondary:Icon(s.dark?Icons.dark_mode:Icons.light_mode,color:gold),
+          title:const Text('الوضع الليلي',style:TextStyle(fontWeight:FontWeight.bold)),
+          subtitle:Text(s.dark?'الوضع الليلي مفعّل':'الوضع العادي مفعّل'),
+          value:s.dark,onChanged:(v)=>s.setDark(v),
+        )),
+        Card(child:SwitchListTile(
+          secondary:const Icon(Icons.vibration,color:gold),
+          title:const Text('الاهتزاز'),
+          subtitle:const Text('اهتزاز خفيف عند التسبيح'),
+          value:s.vibration,onChanged:(v)=>s.setVibration(v),
+        )),
+        Card(child:ListTile(
+          leading:Container(width:42,height:42,decoration:BoxDecoration(color:green.withOpacity(.09),shape:BoxShape.circle),child:const Icon(Icons.support_agent,color:green)),
+          title:const Text('التواصل مع مطوّر التطبيق',style:TextStyle(fontWeight:FontWeight.bold)),
+          subtitle:const Text('راسلنا مباشرة عبر واتساب • 771177633'),
+          trailing:const Icon(Icons.open_in_new,color:gold),
+          onTap:()=>contactDeveloper(c),
+        )),
+        Card(child:ListTile(
+          leading:const Icon(Icons.bookmark_remove,color:gold),
+          title:const Text('مسح موضع القراءة المحفوظ'),
+          onTap:()async{final p=await SharedPreferences.getInstance();await p.remove('last_surah');await p.remove('last_ayah');if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(const SnackBar(content:Text('تم مسح موضع القراءة.')));},
+        )),
+        const Card(child:ListTile(leading:Icon(Icons.info_outline,color:gold),title:Text('عن التطبيق'),subtitle:Text('رفيق المسلم • رفيقك إلى الطمأنينة • الإصدار 1.0.1'))),
+        const Card(child:Padding(padding:EdgeInsets.all(16),child:Text('مواقيت الصلاة محسوبة على الجهاز وفق طريقة الحساب المختارة، وقد تحتاج إلى مطابقتها مع تقويم المسجد في منطقتك.',style:TextStyle(color:Colors.grey,height:1.7)))),
+        const Center(child:Text('نسأل الله أن ينفع بهذا العمل ويتقبله.',style:TextStyle(color:gold,fontWeight:FontWeight.bold))),
+      ])),
+    ]));
+  }
+}
