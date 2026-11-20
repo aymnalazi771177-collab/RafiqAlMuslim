@@ -413,13 +413,27 @@ class _TasbeehPageState extends State<TasbeehPage>{
   @override void initState(){super.initState();load();}
   Future<void> load()async{final p=await SharedPreferences.getInstance();if(mounted)setState(()=>count=p.getInt('tasbeeh_'+zekr)??0);}
   Future<void> save()async{final p=await SharedPreferences.getInstance();await p.setInt('tasbeeh_'+zekr,count);}
-  @override Widget build(BuildContext c)=>SafeArea(child:Column(children:[
-    const Header('المسبحة الإلكترونية',Icons.radio_button_checked),const Spacer(),const Text('الذكر الحالي',style:TextStyle(color:Colors.grey)),
-    DropdownButton<String>(value:zekr,items:choices.map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)async{if(v==null)return;setState(()=>zekr=v);final p=await SharedPreferences.getInstance();if(mounted)setState(()=>count=p.getInt('tasbeeh_'+v)??0);}),
-    const SizedBox(height:20),Container(width:205,height:205,decoration:BoxDecoration(shape:BoxShape.circle,color:green,border:Border.all(color:gold,width:6)),child:Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Text('$count',style:const TextStyle(color:gold,fontSize:62,fontWeight:FontWeight.bold)),const Text('تسبيحة',style:TextStyle(color:Colors.white70))]))),
-    const SizedBox(height:20),Text(zekr,style:const TextStyle(fontSize:20,color:green,fontWeight:FontWeight.bold)),const SizedBox(height:15),
-    ElevatedButton.icon(style:ElevatedButton.styleFrom(backgroundColor:green,foregroundColor:Colors.white,padding:const EdgeInsets.symmetric(horizontal:45,vertical:15)),onPressed:()async{await feedback();setState(()=>count++);await save();},icon:const Icon(Icons.touch_app),label:const Text('تسبيح')),
-    TextButton(onPressed:()async{setState(()=>count=0);await save();},child:const Text('إعادة العداد')),const Spacer()
+  @override Widget build(BuildContext c)=>SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(16,0,16,22),children:[
+    const Header('المسبحة الإلكترونية',Icons.radio_button_checked),
+    const SizedBox(height:22),
+    Container(padding:const EdgeInsets.all(18),decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topRight,end:Alignment.bottomLeft,colors:[green,darkGreen]),borderRadius:BorderRadius.circular(26),border:Border.all(color:gold,width:1.4),boxShadow:[BoxShadow(color:green.withOpacity(.16),blurRadius:15,offset:const Offset(0,6))]),child:Column(children:[
+      const Text('وَرَطِّبْ لِسَانَكَ بِذِكْرِ اللَّه',textAlign:TextAlign.center,style:TextStyle(color:Color(0xFFF3D28D),fontSize:18,fontWeight:FontWeight.bold)),
+      const SizedBox(height:5),const Text('ألا بذكر الله تطمئن القلوب',style:TextStyle(color:Colors.white70,fontSize:13)),
+      const SizedBox(height:18),
+      Container(padding:const EdgeInsets.symmetric(horizontal:14),decoration:BoxDecoration(color:const Color(0xFFFFFCF4),borderRadius:BorderRadius.circular(16),border:Border.all(color:gold)),child:DropdownButtonHideUnderline(child:DropdownButton<String>(isExpanded:true,value:zekr,items:choices.map((v)=>DropdownMenuItem(value:v,child:Text(v,textAlign:TextAlign.center,style:const TextStyle(color:green,fontWeight:FontWeight.bold)))).toList(),onChanged:(v)async{if(v==null)return;setState(()=>zekr=v);final p=await SharedPreferences.getInstance();if(mounted)setState(()=>count=p.getInt('tasbeeh_'+v)??0);}))),
+      const SizedBox(height:22),
+      GestureDetector(onTap:()async{await feedback();setState(()=>count++);await save();},child:Container(width:220,height:220,decoration:BoxDecoration(shape:BoxShape.circle,color:const Color(0xFFFFF8E8),border:Border.all(color:gold,width:7),boxShadow:[BoxShadow(color:Colors.black.withOpacity(.18),blurRadius:12,offset:const Offset(0,5))]),child:Center(child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Text('$count',style:const TextStyle(color:green,fontSize:65,fontWeight:FontWeight.bold)),const Text('مرة',style:TextStyle(color:darkGreen,fontSize:17,fontWeight:FontWeight.bold)),const SizedBox(height:5),const Text('اضغط للعدّ',style:TextStyle(color:Colors.black54,fontSize:12))])))),
+      const SizedBox(height:18),
+      SizedBox(width:double.infinity,child:FilledButton.icon(style:FilledButton.styleFrom(backgroundColor:const Color(0xFF0C8B54),foregroundColor:Colors.white,padding:const EdgeInsets.symmetric(vertical:15),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(30),side:const BorderSide(color:gold,width:1))),onPressed:()async{await feedback();setState(()=>count++);await save();},icon:const Icon(Icons.touch_app_rounded),label:const Text('سبحان الله',style:TextStyle(fontSize:17,fontWeight:FontWeight.bold)))),
+      const SizedBox(height:8),
+      TextButton.icon(onPressed:()async{setState(()=>count=0);await save();},icon:const Icon(Icons.refresh,color:Color(0xFFF3D28D)),label:const Text('إعادة التعيين',style:TextStyle(color:Color(0xFFF3D28D)))),
+    ])),
+    const SizedBox(height:16),
+    Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(color:const Color(0xFFFFFCF4),borderRadius:BorderRadius.circular(18),border:Border.all(color:gold.withOpacity(.55))),child:Column(children:[
+      const Text('هدف اليوم',style:TextStyle(color:green,fontSize:17,fontWeight:FontWeight.bold)),
+      const SizedBox(height:6),Text('$count من 100 مرة',style:const TextStyle(color:darkGreen,fontWeight:FontWeight.w600)),
+      const SizedBox(height:9),ClipRRect(borderRadius:BorderRadius.circular(20),child:LinearProgressIndicator(value:(count/100).clamp(0.0,1.0),minHeight:9,backgroundColor:gold.withOpacity(.2),color:green)),
+    ])),
   ]));
 }
 
