@@ -581,8 +581,15 @@ class _PrayerPageState extends State<PrayerPage>{
   }
 }
 
-class SettingsPage extends StatelessWidget{
+class SettingsPage extends StatefulWidget{
   const SettingsPage({super.key});
+  @override State<SettingsPage> createState()=>_SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage>{
+  @override void initState(){super.initState();AppPrefs.instance.addListener(_refresh);}
+  @override void dispose(){AppPrefs.instance.removeListener(_refresh);super.dispose();}
+  void _refresh(){if(mounted)setState((){});}
   Future<void> contactDeveloper(BuildContext c)async{
     final uri=Uri.parse('https://wa.me/967771177633?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%D9%83%D9%85%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%B1%D9%81%D9%8A%D9%82%20%D8%A7%D9%84%D9%85%D8%B3%D9%84%D9%85.');
     try{
@@ -612,7 +619,7 @@ class SettingsPage extends StatelessWidget{
         Card(child:ListTile(
           leading:Container(width:42,height:42,decoration:BoxDecoration(color:green.withOpacity(.09),shape:BoxShape.circle),child:const Icon(Icons.support_agent,color:green)),
           title:const Text('التواصل مع مطوّر التطبيق',style:TextStyle(fontWeight:FontWeight.bold)),
-          subtitle:const Text('راسلنا مباشرة عبر واتساب • 771177633'),
+          subtitle:const Text('راسلنا مباشرة عبر واتساب'),
           trailing:const Icon(Icons.open_in_new,color:gold),
           onTap:()=>contactDeveloper(c),
         )),
@@ -621,7 +628,7 @@ class SettingsPage extends StatelessWidget{
           title:const Text('مسح موضع القراءة المحفوظ'),
           onTap:()async{final p=await SharedPreferences.getInstance();await p.remove('last_surah');await p.remove('last_ayah');if(c.mounted)ScaffoldMessenger.of(c).showSnackBar(const SnackBar(content:Text('تم مسح موضع القراءة.')));},
         )),
-        const Card(child:ListTile(leading:Icon(Icons.info_outline,color:gold),title:Text('عن التطبيق'),subtitle:Text('رفيق المسلم • رفيقك إلى الطمأنينة • الإصدار 1.0.1'))),
+        const Card(child:ListTile(leading:Icon(Icons.info_outline,color:gold),title:Text('عن التطبيق'),subtitle:Text('رفيق المسلم • رفيقك إلى الطمأنينة • الإصدار 1.0.2'))),
         const Card(child:Padding(padding:EdgeInsets.all(16),child:Text('مواقيت الصلاة محسوبة على الجهاز وفق طريقة الحساب المختارة، وقد تحتاج إلى مطابقتها مع تقويم المسجد في منطقتك.',style:TextStyle(color:Colors.grey,height:1.7)))),
         const Center(child:Text('نسأل الله أن ينفع بهذا العمل ويتقبله.',style:TextStyle(color:gold,fontWeight:FontWeight.bold))),
       ])),
