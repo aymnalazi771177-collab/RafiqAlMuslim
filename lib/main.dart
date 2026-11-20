@@ -46,7 +46,7 @@ class _RafiqAppState extends State<RafiqApp> {
     final dark=AppPrefs.instance.dark;
     return MaterialApp(
       debugShowCheckedModeBanner:false,title:'رفيق المسلم',themeMode:dark?ThemeMode.dark:ThemeMode.light,
-      theme:ThemeData(useMaterial3:true,scaffoldBackgroundColor:cream,colorScheme:ColorScheme.fromSeed(seedColor:green,primary:green,secondary:gold),appBarTheme:const AppBarTheme(backgroundColor:green,foregroundColor:gold,centerTitle:true),cardTheme:CardThemeData(color:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(18)))),
+      theme:ThemeData(useMaterial3:true,scaffoldBackgroundColor:cream,colorScheme:ColorScheme.fromSeed(seedColor:green,primary:green,secondary:gold),appBarTheme:const AppBarTheme(backgroundColor:green,foregroundColor:gold,centerTitle:true,elevation:0),cardTheme:CardThemeData(color:const Color(0xFFFFFCF4),elevation:2,margin:const EdgeInsets.symmetric(vertical:6,horizontal:2),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(20),side:BorderSide(color:gold.withOpacity(.38)))),inputDecorationTheme:InputDecorationTheme(filled:true,fillColor:const Color(0xFFFFFCF4),contentPadding:const EdgeInsets.symmetric(horizontal:16,vertical:14),border:OutlineInputBorder(borderRadius:BorderRadius.circular(16),borderSide:BorderSide.none),enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.circular(16),borderSide:BorderSide(color:gold.withOpacity(.35)))),navigationBarTheme:NavigationBarThemeData(height:68,backgroundColor:const Color(0xFFFFFCF4),indicatorColor:gold.withOpacity(.24),labelTextStyle:WidgetStateProperty.all(const TextStyle(fontWeight:FontWeight.w700))),)
       darkTheme:ThemeData(useMaterial3:true,brightness:Brightness.dark,colorScheme:ColorScheme.fromSeed(seedColor:green,secondary:gold,brightness:Brightness.dark),scaffoldBackgroundColor:const Color(0xFF101B18),appBarTheme:const AppBarTheme(backgroundColor:darkGreen,foregroundColor:gold,centerTitle:true)),
       home:const Directionality(textDirection:TextDirection.rtl,child:MainScreen()));
   }
@@ -69,21 +69,70 @@ class _MainScreenState extends State<MainScreen>{
 
 class HomePage extends StatelessWidget{
   final ValueChanged<int> open; const HomePage({super.key,required this.open});
-  static const items=[('القرآن الكريم',Icons.menu_book,1),('الأذكار اليومية',Icons.volunteer_activism,3),('المسبحة الإلكترونية',Icons.radio_button_checked,2),('قصص الأنبياء',Icons.auto_stories,4),('مواقيت الصلاة',Icons.access_time,5),('الإعدادات',Icons.settings,6)];
-  @override Widget build(BuildContext context)=>SafeArea(child:ListView(padding:const EdgeInsets.all(17),children:[
-    Container(padding:const EdgeInsets.all(23),decoration:BoxDecoration(gradient:const LinearGradient(colors:[green,darkGreen]),borderRadius:BorderRadius.circular(25),border:Border.all(color:gold)),child:const Column(children:[
-      Icon(Icons.mosque,color:gold,size:52),SizedBox(height:10),Text('رفيق المسلم',style:TextStyle(color:gold,fontSize:29,fontWeight:FontWeight.bold)),Text('رفيقك إلى الطمأنينة',style:TextStyle(color:Colors.white)),SizedBox(height:18),
-      Text('أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',textAlign:TextAlign.center,style:TextStyle(color:Colors.white,fontSize:20,height:1.8))
-    ])),
-    const SizedBox(height:22),const Text('أقسام التطبيق',style:TextStyle(color:green,fontSize:21,fontWeight:FontWeight.bold)),const SizedBox(height:12),
-    GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),itemCount:items.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:2,crossAxisSpacing:12,mainAxisSpacing:12,childAspectRatio:1.12),itemBuilder:(c,i){
-      final x=items[i];return InkWell(borderRadius:BorderRadius.circular(18),onTap:(){feedback();open(x.$3);},child:Container(decoration:BoxDecoration(color:Theme.of(c).cardColor,borderRadius:BorderRadius.circular(18),border:Border.all(color:gold.withOpacity(.6))),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(x.$2,color:gold,size:38),const SizedBox(height:10),Text(x.$1,style:TextStyle(color:Theme.of(c).colorScheme.primary,fontWeight:FontWeight.bold))])));
+  static const items=[('القرآن الكريم',Icons.menu_book_rounded,1),('الأذكار اليومية',Icons.volunteer_activism_rounded,3),('المسبحة الإلكترونية',Icons.radio_button_checked_rounded,2),('قصص الأنبياء',Icons.auto_stories_rounded,4),('مواقيت الصلاة',Icons.access_time_rounded,5),('الإعدادات',Icons.settings_rounded,6)];
+  @override Widget build(BuildContext context)=>SafeArea(child:ListView(padding:const EdgeInsets.fromLTRB(15,12,15,22),children:[
+    Container(
+      padding:const EdgeInsets.fromLTRB(20,22,20,20),
+      decoration:BoxDecoration(
+        gradient:const LinearGradient(begin:Alignment.topRight,end:Alignment.bottomLeft,colors:[Color(0xFF075344),Color(0xFF032D26)]),
+        borderRadius:BorderRadius.circular(28),
+        border:Border.all(color:gold,width:1.5),
+        boxShadow:[BoxShadow(color:green.withOpacity(.18),blurRadius:16,offset:const Offset(0,7))],
+      ),
+      child:Stack(children:[
+        Positioned(left:0,top:0,child:Icon(Icons.nightlight_round,color:gold.withOpacity(.18),size:45)),
+        Column(children:[
+          Container(width:66,height:66,decoration:BoxDecoration(shape:BoxShape.circle,color:gold.withOpacity(.12),border:Border.all(color:gold.withOpacity(.7))),child:const Icon(Icons.menu_book_rounded,color:gold,size:38)),
+          const SizedBox(height:10),
+          const Text('رفيق المسلم',style:TextStyle(color:Color(0xFFF5D58D),fontSize:29,fontWeight:FontWeight.bold,letterSpacing:.2)),
+          const SizedBox(height:3),
+          const Text('رفيقك إلى الطمأنينة',style:TextStyle(color:Colors.white,fontSize:14)),
+          const SizedBox(height:17),
+          Container(height:1,color:gold.withOpacity(.55)),
+          const SizedBox(height:14),
+          const Text('السلام عليكم ورحمة الله',style:TextStyle(color:Colors.white,fontSize:19,fontWeight:FontWeight.bold)),
+          const SizedBox(height:7),
+          const Text('اجعل يومك عامرًا بذكر الله',style:TextStyle(color:Color(0xFFF2D99E),fontSize:14)),
+          const SizedBox(height:15),
+          Container(width:double.infinity,padding:const EdgeInsets.symmetric(vertical:13,horizontal:10),decoration:BoxDecoration(color:Colors.white.withOpacity(.08),borderRadius:BorderRadius.circular(16),border:Border.all(color:gold.withOpacity(.45))),child:const Column(children:[
+            Text('آية اليوم',style:TextStyle(color:Color(0xFFF2D99E),fontWeight:FontWeight.bold)),
+            SizedBox(height:5),
+            Text('أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',textAlign:TextAlign.center,style:TextStyle(color:Colors.white,fontSize:18,height:1.7)),
+            Text('سورة الرعد • 28',style:TextStyle(color:Color(0xFFE7D4A8),fontSize:11)),
+          ])),
+        ]),
+      ]),
+    ),
+    const SizedBox(height:21),
+    Row(children:[
+      const Expanded(child:Text('أقسام التطبيق',style:TextStyle(color:green,fontSize:20,fontWeight:FontWeight.bold))),
+      Container(padding:const EdgeInsets.symmetric(horizontal:11,vertical:5),decoration:BoxDecoration(color:gold.withOpacity(.18),borderRadius:BorderRadius.circular(20)),child:const Text('رفيقك اليومي',style:TextStyle(color:green,fontSize:11,fontWeight:FontWeight.bold))),
+    ]),
+    const SizedBox(height:12),
+    GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),itemCount:items.length,gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:2,crossAxisSpacing:11,mainAxisSpacing:11,childAspectRatio:1.16),itemBuilder:(c,i){
+      final x=items[i];
+      return Material(color:Colors.transparent,child:InkWell(borderRadius:BorderRadius.circular(20),onTap:(){feedback();open(x.$3);},child:Container(
+        decoration:BoxDecoration(color:const Color(0xFFFFFCF4),borderRadius:BorderRadius.circular(20),border:Border.all(color:gold.withOpacity(.55)),boxShadow:[BoxShadow(color:green.withOpacity(.05),blurRadius:8,offset:const Offset(0,3))]),
+        child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+          Container(width:54,height:54,decoration:BoxDecoration(color:green.withOpacity(.09),shape:BoxShape.circle,border:Border.all(color:gold.withOpacity(.65))),child:Icon(x.$2,color:green,size:29)),
+          const SizedBox(height:9),
+          Text(x.$1,textAlign:TextAlign.center,style:const TextStyle(color:green,fontWeight:FontWeight.bold,fontSize:13)),
+        ]),
+      )));
     }),
-    Card(child:ListTile(leading:const Icon(Icons.bookmark,color:gold),title:const Text('متابعة القراءة'),subtitle:const Text('العودة إلى آخر موضع حفظته'),onTap:()async{final p=await SharedPreferences.getInstance();final page=p.getInt('last_page')??1;if(!context.mounted)return;Navigator.push(context,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(initialPage:page))));}))
+    const SizedBox(height:8),
+    Container(decoration:BoxDecoration(color:const Color(0xFFFFFCF4),borderRadius:BorderRadius.circular(18),border:Border.all(color:gold.withOpacity(.55))),child:ListTile(
+      contentPadding:const EdgeInsets.symmetric(horizontal:15,vertical:5),
+      leading:Container(width:43,height:43,decoration:BoxDecoration(color:green.withOpacity(.1),shape:BoxShape.circle),child:const Icon(Icons.bookmark_added_rounded,color:green)),
+      title:const Text('متابعة آخر قراءة',style:TextStyle(color:green,fontWeight:FontWeight.bold)),
+      subtitle:const Text('العودة إلى موضعك المحفوظ في المصحف'),
+      trailing:const Icon(Icons.chevron_left,color:gold),
+      onTap:()async{final p=await SharedPreferences.getInstance();final page=p.getInt('last_page')??1;if(!context.mounted)return;Navigator.push(context,MaterialPageRoute(builder:(_)=>Directionality(textDirection:TextDirection.rtl,child:QuranReader(initialPage:page))));},
+    )),
   ]));
 }
 
-class Header extends StatelessWidget{final String title;final IconData icon;const Header(this.title,this.icon,{super.key});@override Widget build(BuildContext c)=>Container(width:double.infinity,padding:const EdgeInsets.symmetric(vertical:20),decoration:const BoxDecoration(color:green,borderRadius:BorderRadius.vertical(bottom:Radius.circular(24))),child:Column(children:[Icon(icon,color:gold,size:36),const SizedBox(height:8),Text(title,style:const TextStyle(color:gold,fontSize:23,fontWeight:FontWeight.bold))]));}
+class Header extends StatelessWidget{final String title;final IconData icon;const Header(this.title,this.icon,{super.key});@override Widget build(BuildContext c)=>Container(width:double.infinity,padding:const EdgeInsets.fromLTRB(18,18,18,20),decoration:BoxDecoration(gradient:const LinearGradient(begin:Alignment.topRight,end:Alignment.bottomLeft,colors:[green,darkGreen]),borderRadius:const BorderRadius.vertical(bottom:Radius.circular(26)),border:Border(bottom:BorderSide(color:gold.withOpacity(.8),width:1.2)),boxShadow:[BoxShadow(color:green.withOpacity(.12),blurRadius:10,offset:const Offset(0,4))]),child:Column(children:[Container(width:48,height:48,decoration:BoxDecoration(shape:BoxShape.circle,border:Border.all(color:gold.withOpacity(.65)),color:Colors.white.withOpacity(.06)),child:Icon(icon,color:gold,size:27)),const SizedBox(height:8),Text(title,style:const TextStyle(color:Color(0xFFF3D28D),fontSize:22,fontWeight:FontWeight.bold)),const SizedBox(height:3),Container(width:52,height:2,decoration:BoxDecoration(color:gold,borderRadius:BorderRadius.circular(3))) ]));}
 
 class QuranPage extends StatefulWidget {
   const QuranPage({super.key});
