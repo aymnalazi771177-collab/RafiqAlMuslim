@@ -452,15 +452,43 @@ class _AzkarPageState extends State<AzkarPage>{
   @override void initState(){super.initState();load();}
   Future<void> load()async{final p=await SharedPreferences.getInstance();for(final cat in data.keys){for(var i=0;i<data[cat]!.length;i++){counts[k(cat,i)]=p.getInt(k(cat,i))??0;}}if(mounted)setState((){});}
   Future<void> increment(int i)async{final key=k(selected,i),n=(counts[key]??0)+1;setState(()=>counts[key]=n);final p=await SharedPreferences.getInstance();await p.setInt(key,n);await feedback();}
-  @override Widget build(BuildContext c){final list=data[selected]!;return SafeArea(child:Column(children:[
-    const Header('الأذكار اليومية',Icons.volunteer_activism),
-    SingleChildScrollView(scrollDirection:Axis.horizontal,padding:const EdgeInsets.all(9),child:Row(children:data.keys.map((cat)=>Padding(padding:const EdgeInsets.symmetric(horizontal:3),child:ChoiceChip(label:Text(cat),selected:selected==cat,selectedColor:gold.withOpacity(.3),onSelected:(_)=>setState(()=>selected=cat)))).toList())),
-    Expanded(child:ListView.builder(padding:const EdgeInsets.all(12),itemCount:list.length,itemBuilder:(c,i){final d=list[i],n=counts[k(selected,i)]??0,done=n>=d.repeat;return Card(child:Padding(padding:const EdgeInsets.all(16),child:Column(children:[
-      Text(d.text,textAlign:TextAlign.center,style:const TextStyle(fontSize:18,height:1.9)),const SizedBox(height:9),
-      Text(done?'اكتمل الذكر ✓':'التكرار: '+n.toString()+' من '+d.repeat.toString(),style:TextStyle(color:done?Colors.green:Colors.grey,fontWeight:FontWeight.bold)),
-      Row(mainAxisAlignment:MainAxisAlignment.center,children:[ElevatedButton(onPressed:done?null:()=>increment(i),style:ElevatedButton.styleFrom(backgroundColor:green,foregroundColor:Colors.white),child:const Text('اضغط للتكرار')),const SizedBox(width:8),OutlinedButton(onPressed:()async{setState(()=>counts[k(selected,i)]=0);final p=await SharedPreferences.getInstance();await p.setInt(k(selected,i),0);},child:const Text('تصفير'))])
-    ])));})),
-  ]));}
+  @override Widget build(BuildContext c){
+    final list=data[selected]!;
+    return SafeArea(child:Column(children:[
+      const Header('الأذكار اليومية',Icons.volunteer_activism),
+      Container(margin:const EdgeInsets.fromLTRB(14,12,14,5),padding:const EdgeInsets.all(14),decoration:BoxDecoration(gradient:const LinearGradient(colors:[green,darkGreen]),borderRadius:BorderRadius.circular(18),border:Border.all(color:gold.withOpacity(.8))),child:Row(children:[
+        Container(width:43,height:43,decoration:BoxDecoration(shape:BoxShape.circle,color:gold.withOpacity(.15),border:Border.all(color:gold.withOpacity(.7))),child:const Icon(Icons.auto_awesome,color:gold)),
+        const SizedBox(width:11),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+          Text(selected,style:const TextStyle(color:Color(0xFFF3D28D),fontSize:17,fontWeight:FontWeight.bold)),
+          const SizedBox(height:3),const Text('اجعل لسانك رطبًا بذكر الله',style:TextStyle(color:Colors.white,fontSize:12)),
+        ])),
+      ])),
+      SingleChildScrollView(scrollDirection:Axis.horizontal,padding:const EdgeInsets.symmetric(horizontal:10,vertical:9),child:Row(children:data.keys.map((cat)=>Padding(padding:const EdgeInsets.symmetric(horizontal:3),child:ChoiceChip(
+        label:Text(cat,style:TextStyle(color:selected==cat?Colors.white:green,fontWeight:FontWeight.bold,fontSize:12)),
+        selected:selected==cat,selectedColor:green,backgroundColor:const Color(0xFFFFFCF4),side:BorderSide(color:gold.withOpacity(.6)),
+        shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(22)),onSelected:(_)=>setState(()=>selected=cat),
+      ))).toList())),
+      Expanded(child:ListView.builder(padding:const EdgeInsets.fromLTRB(13,4,13,18),itemCount:list.length,itemBuilder:(c,i){
+        final d=list[i],n=counts[k(selected,i)]??0,done=n>=d.repeat;
+        return Container(margin:const EdgeInsets.only(bottom:12),decoration:BoxDecoration(color:const Color(0xFFFFFCF4),borderRadius:BorderRadius.circular(19),border:Border.all(color:gold.withOpacity(.48)),boxShadow:[BoxShadow(color:green.withOpacity(.045),blurRadius:7,offset:const Offset(0,3))]),child:Column(children:[
+          Container(height:5,decoration:BoxDecoration(color:done?const Color(0xFF4B9569):green,borderRadius:const BorderRadius.vertical(top:Radius.circular(19)))),
+          Padding(padding:const EdgeInsets.fromLTRB(17,16,17,13),child:Column(children:[
+            Text(d.text,textAlign:TextAlign.center,style:const TextStyle(color:Color(0xFF24342D),fontSize:18,height:1.95,fontWeight:FontWeight.w500)),
+            const SizedBox(height:13),
+            Row(mainAxisAlignment:MainAxisAlignment.center,children:[
+              Container(padding:const EdgeInsets.symmetric(horizontal:13,vertical:7),decoration:BoxDecoration(color:done?const Color(0xFFE7F2E9):gold.withOpacity(.16),borderRadius:BorderRadius.circular(20)),child:Text(done?'اكتمل الذكر ✓':'التكرار  $n / ${d.repeat}',style:TextStyle(color:done?const Color(0xFF28734B):green,fontWeight:FontWeight.bold,fontSize:12))),
+            ]),
+            const SizedBox(height:12),
+            Row(children:[
+              Expanded(child:FilledButton.icon(onPressed:done?null:()=>increment(i),style:FilledButton.styleFrom(backgroundColor:green,foregroundColor:Colors.white,disabledBackgroundColor:const Color(0xFFE5EEE7),disabledForegroundColor:green,padding:const EdgeInsets.symmetric(vertical:12),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(25))),icon:Icon(done?Icons.check_circle:Icons.touch_app_rounded,size:18),label:Text(done?'تم الذكر':'اضغط للتكرار',style:const TextStyle(fontWeight:FontWeight.bold)))),
+              const SizedBox(width:9),
+              OutlinedButton.icon(onPressed:()async{setState(()=>counts[k(selected,i)]=0);final p=await SharedPreferences.getInstance();await p.setInt(k(selected,i),0);},style:OutlinedButton.styleFrom(foregroundColor:green,side:BorderSide(color:gold.withOpacity(.8)),padding:const EdgeInsets.symmetric(horizontal:13,vertical:12),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(25))),icon:const Icon(Icons.refresh,size:17),label:const Text('تصفير')),
+            ]),
+          ])),
+        ]));
+      })),
+    ]));
+  }
 }
 
 class StoriesPage extends StatelessWidget {
